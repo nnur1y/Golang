@@ -12,7 +12,7 @@
 1. Altynali Nurly https://github.com/nnur1y
 2. Aman Assem https://github.com/200103439As
 3. Bolatbekova Dayana https://github.com/Dio-ni
-4. Altynai
+4. Nessipbay Altynay https://github.com/altjimin
 
 ## Figma Design Example:
 ![image](https://user-images.githubusercontent.com/82755151/217487516-9c344685-7fe9-41cc-9bde-f2e57a9d1d26.png)
