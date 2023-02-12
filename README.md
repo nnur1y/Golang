@@ -1,7 +1,7 @@
 # Golang
 
 - progress reports
-- - progress report 1.pdf
+- - Reports/Report_1.pdf
 
 
 ## About Project
