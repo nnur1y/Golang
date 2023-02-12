@@ -4,32 +4,32 @@ import "fmt"
 
 func main() {
 
-	var iPhone14, iPhone13, iPhoneSE int = 799, 599, 429
+	var basic, standard, curator int = 50000, 90000, 130000
 
 	var m3, m6, m12, m24 int = 3, 6, 12, 24
 
 	fmt.Println("iPhone prices:")
-	fmt.Println("1. iPhone 14 - $", iPhone14)
-	fmt.Println("2. iPhone 13 - $", iPhone13)
-	fmt.Println("3. iPhone SE - $", iPhoneSE)
+	fmt.Println("1. Basic package -", basic)
+	fmt.Println("2. Standard package -", standard)
+	fmt.Println("3. Curator package -", curator)
 
-	fmt.Println("Напишите номер выбранного iPhone (1,2,3): ")
+	fmt.Println("Напишите номер выбранного пакета (1,2,3):")
 	var number int
 	fmt.Scanln(&number)
 
 	price := 0
-	phone := ""
+	pack := ""
 
 	switch number {
 	case 1:
-		phone = "iPhone 14"
-		price = iPhone14
+		pack = "Basic package"
+		price = basic
 	case 2:
-		phone = "iPhone 13"
-		price = iPhone13
+		pack = "Standard package"
+		price = standard
 	case 3:
-		phone = "iPhone SE"
-		price = iPhoneSE
+		pack = "Curator package"
+		price = curator
 	default:
 		fmt.Println("Choose right number")
 
@@ -40,7 +40,7 @@ func main() {
 	var month int
 	fmt.Scanln(&month)
 
-	fmt.Println("You have chosen a ", phone, " which costs $", price)
+	fmt.Println("You have chosen a", pack, " package which costs", price)
 
 	switch month {
 	case 3:
@@ -56,6 +56,6 @@ func main() {
 
 	}
 
-	fmt.Println("You chose to pay in installments for", month, " months, it will be $", price, " per month")
+	fmt.Println("You chose to pay in installments for", month, "months, it will be", price, "tg per month")
 
 }
