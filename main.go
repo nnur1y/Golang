@@ -1,9 +1,56 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"html/template"
+	"net/http"
+)
 
+type User struct {
+	Nickname string
+	Cooker   bool
+	Age      uint16
+	Gender   string
+	Recipes  []string
+}
+
+func (u User) getAllInfo() string {
+	return fmt.Sprintf("Nickname is: %s. Age is %d, and gender is %s", u.Nickname, u.Age, u.Gender)
+
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
+	tmpl, _ := template.ParseFiles("templates/index.html")
+	tmpl.Execute(w, data1)
+}
+func account(w http.ResponseWriter, r *http.Request) {
+	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
+	tmpl, _ := template.ParseFiles("templates/account.html")
+	tmpl.Execute(w, data1)
+}
+
+func login_page(w http.ResponseWriter, r *http.Request) {
+	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
+	tmpl, _ := template.ParseFiles("templates/login_page.html")
+	tmpl.Execute(w, data1)
+}
+
+func handleRequest() {
+	http.HandleFunc("/index/", home)
+	http.HandleFunc("/", account)
+	http.HandleFunc("/loginpage/", login_page)
+	http.ListenAndServe(":8080", nil)
+
+}
 func main() {
 
+	handleRequest()
+
+	//installments()
+}
+
+func installments() {
 	var basic, standard, curator int = 50000, 90000, 130000
 
 	var m3, m6, m12, m24 int = 3, 6, 12, 24
