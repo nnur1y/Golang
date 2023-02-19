@@ -2,6 +2,7 @@
 
 - progress reports
 - - Reports/Report_1.pdf
+- - Reports/Report_2.pdf
 
 
 ## About Project
