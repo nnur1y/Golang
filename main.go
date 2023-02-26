@@ -2,107 +2,90 @@ package main
 
 import (
 	"fmt"
-	"html/template"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
 
-type User struct {
-	Nickname string
-	Cooker   bool
-	Age      uint16
-	Gender   string
-	Recipes  []string
-}
+var router *gin.Engine
 
-func (u User) getAllInfo() string {
-	return fmt.Sprintf("Nickname is: %s. Age is %d, and gender is %s", u.Nickname, u.Age, u.Gender)
-
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
-	tmpl, _ := template.ParseFiles("templates/index.html")
-	tmpl.Execute(w, data1)
-}
-func account(w http.ResponseWriter, r *http.Request) {
-	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
-	tmpl, _ := template.ParseFiles("templates/account.html")
-	tmpl.Execute(w, data1)
-}
-
-func login_page(w http.ResponseWriter, r *http.Request) {
-	data1 := User{"Nurly", true, 19, "Female", []string{"Deserts", "Rollton salad with sausage", "Waffles"}}
-	tmpl, _ := template.ParseFiles("templates/login_page.html")
-	tmpl.Execute(w, data1)
-}
-
-func handleRequest() {
-	http.HandleFunc("/index/", home)
-	http.HandleFunc("/", account)
-	http.HandleFunc("/loginpage/", login_page)
-	http.ListenAndServe(":8080", nil)
-
-}
 func main() {
+	var e error
 
-	handleRequest()
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
 
-	//installments()
+	router = gin.Default()
+	router.Static("/assets/", "assets/")
+	router.LoadHTMLGlob("templates/*.html")
+	router.GET("/", handlerIndex)
+	router.GET("/registration", handlerRegistration)
+	router.GET("/authorization", handlerAuthorization)
+	router.POST("/user/reg", handlerUserRegistration)
+	router.POST("/user/auth", handlerUserAuthorization)
+	_ = router.Run(":8080")
 }
 
-func installments() {
-	var basic, standard, curator int = 50000, 90000, 130000
+// pkg.go.dev/text/template
+func handlerIndex(c *gin.Context) {
+	c.HTML(200, "layout.html", gin.H{
+		"Role": "manager",
+	})
+}
+func handlerRegistration(c *gin.Context) {
+	c.HTML(200, "registration.html", gin.H{})
+}
 
-	var m3, m6, m12, m24 int = 3, 6, 12, 24
+func handlerAuthorization(c *gin.Context) {
+	c.HTML(200, "authorization.html", gin.H{})
+}
 
-	fmt.Println("iPhone prices:")
-	fmt.Println("1. Basic package -", basic)
-	fmt.Println("2. Standard package -", standard)
-	fmt.Println("3. Curator package -", curator)
+func handlerUserRegistration(c *gin.Context) {
 
-	fmt.Println("Напишите номер выбранного пакета (1,2,3):")
-	var number int
-	fmt.Scanln(&number)
+	var user User
 
-	price := 0
-	pack := ""
-
-	switch number {
-	case 1:
-		pack = "Basic package"
-		price = basic
-	case 2:
-		pack = "Standard package"
-		price = standard
-	case 3:
-		pack = "Curator package"
-		price = curator
-	default:
-		fmt.Println("Choose right number")
-
+	e := c.BindJSON(&user)
+	if e != nil {
+		c.JSON(200, gin.H{
+			"Error": e.Error(),
+		})
+		return
 	}
 
-	fmt.Println("Выберите, сколько месяцев вы хотите платить в рассрочку")
-	fmt.Println(m3, m6, m12, m24)
-	var month int
-	fmt.Scanln(&month)
-
-	fmt.Println("You have chosen a", pack, " package which costs", price)
-
-	switch month {
-	case 3:
-		price = price / 3
-	case 6:
-		price = price / 6
-	case 12:
-		price = price / 12
-	case 24:
-		price = price / 24
-	default:
-		fmt.Println("Choose right number")
-
+	e = user.Create()
+	if e != nil {
+		c.JSON(200, gin.H{
+			"Error": "Не удалось зарегистрировать пользователя",
+		})
+		return
 	}
 
-	fmt.Println("You chose to pay in installments for", month, "months, it will be", price, "tg per month")
+	c.JSON(200, gin.H{
+		"Error": nil,
+	})
+}
 
+func handlerUserAuthorization(c *gin.Context) {
+	// var user User
+	// e := c.BindJSON(&user)
+	// if e != nil {
+	// 	c.JSON(200, gin.H{
+	// 		"Error": e.Error(),
+	// 	})
+	// 	return
+	// }
+
+	// e = user.Select()
+	// if e != nil {
+	// 	c.JSON(200, gin.H{
+	// 		"Error": "Не удалось авторизоваться",
+	// 	})
+	// 	return
+	// }
+
+	// c.JSON(200, gin.H{
+	// 	"Error": nil,
+	// })
 }
