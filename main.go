@@ -8,9 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var router *gin.Engine
+
+var database *sql.DB
 
 func main() {
 	var e error
@@ -48,7 +52,7 @@ func handlerAuthorization(c *gin.Context) {
 func handlerUserRegistration(c *gin.Context) {
 
 	var user User
-
+	// fmt.Println(c.)
 	e := c.BindJSON(&user)
 	if e != nil {
 		c.JSON(200, gin.H{
@@ -65,9 +69,9 @@ func handlerUserRegistration(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"Error": nil,
-	})
+	// c.JSON(200, gin.H{
+	// 	"Error": nil,
+	// })
 }
 
 func handlerUserAuthorization(c *gin.Context) {
@@ -94,9 +98,8 @@ func handlerUserAuthorization(c *gin.Context) {
 }
 
 type User struct {
-	ID        int    `json:"ID,-"`
-	Login     string `json:"login"`
-	Password  string `json:"Password,-"`
+	Login     string `json:"Login"`
+	Password  string `json:"Password"`
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
 	Role      string `json:"Role,-"`
@@ -106,20 +109,20 @@ type User struct {
 func (u User) Create() error {
 	{ // Insert a new user
 
-		username := "FirstName"
-		password := "Password"
+		username := u.FirstName
+		password := u.Password
 		createdAt := time.Now()
+
+		// http.Redirect(w, result, "/", 301)
 		db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
 		result, err := db.Exec(`INSERT INTO users (username, password, created_at) VALUES (?, ?, ?)`, username, password, createdAt)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		id, err := result.LastInsertId()
-		fmt.Println(id)
+		fmt.Println(result)
+
+		fmt.Println(username, password, createdAt)
 	}
-
-	fmt.Println("Create new user with ID", u.ID)
-
 	return nil
 }
