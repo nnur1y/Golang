@@ -22,5 +22,7 @@ if (button) {
             }
         };
         xhr.send(JSON.stringify(data));
+
+        const navBtnDOM = getElement('.nav-btn')
     }
 }
