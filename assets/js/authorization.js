@@ -1,4 +1,4 @@
-let button = document.querySelector("Іsubmit");
+let button = document.querySelector("#submit");
 if (button) {
     button.onclick = function (e) {
         let inputs = document.querySelectorAll(".form-control");
