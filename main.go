@@ -44,7 +44,7 @@ func main() {
 
 // pkg.go.dev/text/template
 func handlerIndexMore(c *gin.Context) {
-	db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
+	db, _ := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
 	result, err := db.Query("SELECT  * from Recipe where id_r=1")
 	if err != nil {
 		log.Println(err)
@@ -71,7 +71,7 @@ func handlerIndexMore(c *gin.Context) {
 	})
 }
 func handlerIndex(c *gin.Context) {
-	db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
+	db, _ := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
 	result, err := db.Query("SELECT  * from Recipe ")
 	if err != nil {
 		log.Println(err)
@@ -135,39 +135,33 @@ func handlerUserRegistration(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/")
 		// c.Redirect(http.StatusFound, "/foo")
 
+	} else {
+		fmt.Println("Signed up!")
 	}
 
-	// c.HTML(200, "layout.html", gin.H{})
-	// c.JSON(200, gin.H{
-	// 	"Error": nil,
-	// })
 }
 
 func handlerUserAuthorization(c *gin.Context) {
 	var user User
 	e := c.BindJSON(&user)
+
 	if e != nil {
 		c.JSON(200, gin.H{
 			"Error": e.Error(),
 		})
-		return
-	}
+		fmt.Println("Некорректные данные")
 
-	e = user.Select()
-	fmt.Println("sign up ")
-	if e != nil {
-		c.HTML(200, "layout.html", gin.H{
-			"Role": "manager",
-		})
-		return
-	}
+	} else {
+		e = user.Select()
+		fmt.Println("Logged in!")
 
-	// c.JSON(200, gin.H{
-	// 	"Error": nil,
-	// })
-	c.HTML(200, "layout.html", gin.H{
-		"Role": "manager",
-	})
+		if e != nil {
+			c.HTML(200, "layout.html", gin.H{
+				"Role": "manager",
+			})
+			return
+		}
+	}
 
 }
 
@@ -188,7 +182,7 @@ func (u User) Create() error {
 		lastname := u.LastName
 		createdAt := time.Now()
 
-		db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
+		db, _ := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
 		result, err := db.Exec(`INSERT INTO users (username, password, firstname, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, username, password, firstname, lastname, createdAt)
 		if err != nil {
 			log.Fatal(err)
