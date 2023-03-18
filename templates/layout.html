@@ -34,7 +34,22 @@
           <a href="about.html" class="nav-link"> about </a>
           <a href="tags.html" class="nav-link"> tags </a>
           <a href="recipes.html" class="nav-link"> recipes </a>
-
+          <input type="text" id="searchitem" placeholder="">
+          <button  onclick="loadMore()">Load more</button>
+          <script>
+              function loadMore() {
+                location.href="/index/more"
+                  var e = document.getElementById("searchitem").value;
+                  var xhr = new XMLHttpRequest();
+                  xhr.onreadystatechange = function() {
+                      if (xhr.readyState == 4 && xhr.status == 200) {
+                          e.outerHTML = xhr.responseText;
+                      }
+                  }
+                  xhr.open("GET", "/index/more", true);
+                  try { xhr.send(); } catch (err) { /* handle error */ }
+              }
+          </script>
           <div class="nav-link contact-link">
             <a href="/registration" class="btn"> sign up </a>
             <a href="/authorization" class="btn">sign in </a>
@@ -60,19 +75,33 @@
         <!-- recipes list -->
         <div class="recipes-list
         ">
+        {{if .search }}
+        <a href="single-recipe.html" class="recipe">
+          <img
+            src="./assets/recipes/recipe-1.jpeg"
+            class="img recipe-img"
+            alt=""
+          />
+          <h5>{{.content.Name}}</h5>
+          <p>Definition {{ .content.Definition}}</p>
+          <p>Author {{ .content.Author}} </p>
+        </a>
+        {{else}}
+            {{ range .content}}
+            <a href="single-recipe.html" class="recipe">
+              <img
+                src="./assets/recipes/recipe-1.jpeg"
+                class="img recipe-img"
+                alt=""
+              />
+              <h5>{{.Name}}</h5>
+              <p>Definition {{.Definition}}</p>
+              <p>Author {{ .Author}} </p>
+            </a>
+            {{end}}
+        {{end}}
           <!-- single recipe -->
-          {{ range .content}}
-          <a href="single-recipe.html" class="recipe">
-            <img
-              src="./assets/recipes/recipe-1.jpeg"
-              class="img recipe-img"
-              alt=""
-            />
-            <h5>{{.Name}}</h5>
-            <p>Definition {{.Definition}}</p>
-            <p>Author {{ .Author}} </p>
-          </a>
-          {{end}}
+         
           <!-- end of single recipe -->
         </div>
       </section>

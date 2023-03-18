@@ -15,8 +15,6 @@ import (
 
 var router *gin.Engine
 
-var database *sql.DB
-
 type Recipe struct {
 	Id         int
 	Name       string
@@ -31,11 +29,11 @@ func main() {
 		fmt.Println(e)
 		return
 	}
-
 	router = gin.Default()
 	router.Static("/assets/", "assets/")
 	router.LoadHTMLGlob("templates/*.html")
-	router.GET("/", handlerIndex)
+	router.GET("/index", handlerIndex)
+	router.GET("/index/more", handlerIndexMore)
 	router.GET("/registration", handlerRegistration)
 	router.GET("/authorization", handlerAuthorization)
 	router.POST("/user/reg", handlerUserRegistration)
@@ -44,9 +42,36 @@ func main() {
 }
 
 // pkg.go.dev/text/template
+func handlerIndexMore(c *gin.Context) {
+	db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
+	result, err := db.Query("SELECT  * from Recipe where id_r=1")
+	if err != nil {
+		log.Println(err)
+	}
+	result.Next()
+	recipe := Recipe{}
+	var id int
+	var name string
+	var definition string
+	var author string
+
+	err = result.Scan(&id, &name, &definition, &author)
+
+	recipe.Id = id
+	recipe.Name = name
+	recipe.Definition = definition
+	recipe.Author = author
+	if err != nil {
+		panic(err)
+	}
+	c.HTML(200, "layout.html", gin.H{
+		"search":  true,
+		"content": recipe,
+	})
+}
 func handlerIndex(c *gin.Context) {
 	db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
-	result, err := db.Query("SELECT  * from Recipe")
+	result, err := db.Query("SELECT  * from Recipe ")
 	if err != nil {
 		log.Println(err)
 	}
@@ -77,6 +102,7 @@ func handlerIndex(c *gin.Context) {
 	// nerr := tmpl.Execute(w, recipes)
 
 	c.HTML(200, "layout.html", gin.H{
+		"search":  false,
 		"content": recipes,
 	})
 }
