@@ -1,7 +1,9 @@
-let button = document.querySelector(".form > button");
+let button = document.querySelector("#submit");
 if (button) {
     button.onclick = function (e) {
-        let inputs = document.querySelectorAll(".form > input");
+        let inputs = document.querySelectorAll(".form-control");
+        // document.querySelector("#floatingInput")
+        
         let data = {};
         for (let i = 0; i < inputs.length; i++) {
             data[inputs[i].name] = inputs[i].value;
@@ -13,7 +15,7 @@ if (button) {
             if ("Error" in response) {
                 if (response.Error == null) {
                     console.log("Пользователь успешно зарегистрирован");
-                    // window.location.url = "http://127.0.0.1:8080/";
+                    window.location.url = "http://127.0.0.1:8080/";
                 } else {
                     console.log(response.Error);
                 }
