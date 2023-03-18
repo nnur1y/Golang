@@ -1,7 +1,7 @@
-let button = document.querySelector(".form > button");
+let button = document.querySelector("Іsubmit");
 if (button) {
     button.onclick = function (e) {
-        let inputs = document.querySelectorAll(".form > input");
+        let inputs = document.querySelectorAll(".form-control");
         let data = {};
         for (let i = 0; i < inputs.length; i++) {
             data[inputs[i].name] = inputs[i].value;

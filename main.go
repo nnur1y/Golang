@@ -32,6 +32,7 @@ func main() {
 	router = gin.Default()
 	router.Static("/assets/", "assets/")
 	router.LoadHTMLGlob("templates/*.html")
+	router.GET("/", handlerIndex)
 	router.GET("/index", handlerIndex)
 	router.GET("/index/more", handlerIndexMore)
 	router.GET("/registration", handlerRegistration)
@@ -175,26 +176,27 @@ type User struct {
 	Password  string `json:"Password"`
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
-	Role      string `json:"Role,-"`
 }
 
 // Create создание нового пользователя в базе
 func (u User) Create() error {
 	{ // Insert a new user
 
-		username := u.FirstName
+		username := u.Login
 		password := u.Password
+		firstname := u.FirstName
+		lastname := u.LastName
 		createdAt := time.Now()
 
 		db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
-		result, err := db.Exec(`INSERT INTO users (username, password, created_at) VALUES (?, ?, ?)`, username, password, createdAt)
+		result, err := db.Exec(`INSERT INTO users (username, password, firstname, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, username, password, firstname, lastname, createdAt)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Println(result)
 
-		fmt.Println(username, password, createdAt)
+		fmt.Println(username, password, firstname, lastname, createdAt)
 	}
 	return nil
 }
