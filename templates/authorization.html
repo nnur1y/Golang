@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="/assets/css/main.css">
   </head>
   <body class="text-center">
+
+
     <!-- nav  -->
     <nav class="navbar">
       <div class="nav-center">
@@ -44,10 +46,12 @@
   
 
     <main class="form-signin  text-center"  style="width: 350px; margin:5% auto;">
-
       <form>
+        {{if .message}}
+        <p>{{.message}}</p>
+        {{ end }}
         <h1 class="h3 mb-3">Please Log in</h1>
-    
+        
         <div class="form-floating">
           <input type="email" name="Email" class="form-control" id="floatingInput" placeholder="Email">
           <label for="floatingInput">Email</label>

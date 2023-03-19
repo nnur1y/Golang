@@ -8,12 +8,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var router *gin.Engine
+var store = sessions.NewCookieStore([]byte("super-secret"))
 
 type Recipe struct {
 	Id         int
@@ -32,6 +34,8 @@ func main() {
 	router = gin.Default()
 	router.Static("/assets/", "assets/")
 	router.LoadHTMLGlob("templates/*.html")
+	authRouter := router.Group("/user", auth)
+
 	router.GET("/", handlerIndex)
 	router.GET("/index", handlerIndex)
 	router.GET("/index/more", handlerIndexMore)
@@ -39,7 +43,36 @@ func main() {
 	router.GET("/authorization", handlerAuthorization)
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
+	authRouter.GET("/profile", profileHandler)
+
 	_ = router.Run(":8080")
+}
+
+func auth(c *gin.Context) {
+	fmt.Println("auth middleware running")
+	session, _ := store.Get(c.Request, "session")
+	fmt.Println("session:", session)
+	_, ok := session.Values["user"]
+	if !ok {
+		c.HTML(http.StatusForbidden, "registration.html", nil)
+		c.Abort()
+		return
+	}
+	fmt.Println("middleware done")
+	c.Next()
+}
+
+func profileHandler(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session")
+	var user = &User{}
+	val := session.Values["user"]
+	var ok bool
+	if user, ok = val.(*User); !ok {
+		fmt.Println("was not of type *User")
+		c.HTML(http.StatusForbidden, "authorization.html", nil)
+		return
+	}
+	c.HTML(http.StatusOK, "profile.html", gin.H{"user": user})
 }
 
 // pkg.go.dev/text/template
@@ -128,12 +161,12 @@ func handlerUserRegistration(c *gin.Context) {
 	}
 
 	e = user.Create()
+	fmt.Println(e)
 	if e != nil {
 		c.JSON(200, gin.H{
 			"Error": "Не удалось зарегистрировать пользователя",
 		})
-		c.Redirect(http.StatusFound, "/")
-		// c.Redirect(http.StatusFound, "/foo")
+		c.Redirect(http.StatusFound, "/authorization")
 
 	} else {
 		fmt.Println("Signed up!")
@@ -144,29 +177,37 @@ func handlerUserRegistration(c *gin.Context) {
 func handlerUserAuthorization(c *gin.Context) {
 	var user User
 	e := c.BindJSON(&user)
-
 	if e != nil {
 		c.JSON(200, gin.H{
 			"Error": e.Error(),
 		})
 		fmt.Println("Некорректные данные")
-
 	} else {
 		e = user.Select()
-		fmt.Println("Logged in!")
-
 		if e != nil {
-			c.HTML(200, "layout.html", gin.H{
-				"Role": "manager",
-			})
-			return
+			//incorrect email or password
+			c.HTML(200, "authorization.html", gin.H{"message": "incorrect username or password"})
+		} else {
+			session, _ := store.Get(c.Request, "session")
+			// session struct has field Values map[interface{}]interface{}
+			session.Values["user"] = user
+			// save before writing to response/return from handler
+			session.Save(c.Request, c.Writer)
+
+			// correct email and password
+			fmt.Println(session)
+			c.HTML(200, "loggedin.html", gin.H{"email": user.Email})
+
 		}
 	}
-
+	c.HTML(200, "authorization.html", gin.H{
+		"login":   true,
+		"message": "incorrect username or password",
+	})
 }
 
 type User struct {
-	Login     string `json:"Login"`
+	Email     string `json:"Email"`
 	Password  string `json:"Password"`
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
@@ -176,21 +217,21 @@ type User struct {
 func (u User) Create() error {
 	{ // Insert a new user
 
-		username := u.Login
+		email := u.Email
 		password := u.Password
 		firstname := u.FirstName
 		lastname := u.LastName
 		createdAt := time.Now()
 
 		db, _ := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
-		result, err := db.Exec(`INSERT INTO users (username, password, firstname, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, username, password, firstname, lastname, createdAt)
+		result, err := db.Exec(`INSERT INTO users (email, password, firstname, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, email, password, firstname, lastname, createdAt)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Println(result)
 
-		fmt.Println(username, password, firstname, lastname, createdAt)
+		fmt.Println(email, password, firstname, lastname, createdAt)
 	}
 	return nil
 }
@@ -198,27 +239,21 @@ func (u User) Create() error {
 func (u User) Select() error {
 	{ // Insert a new user
 
-		username := u.Login
-		// password := u.Password
+		email := u.Email
+		password := u.Password
+
 		var (
-			getusername string
+			getemail    string
 			getpassword string
 		)
 		db, err := sql.Open("mysql", "root:password@(localhost:3306)/world?parseTime=true")
-		// result, err := db.Exec(`select  VALUES (?, ?, ?)`, username, password, createdAt)
-		query := "SELECT  username, password FROM users WHERE username = ?"
-		if err := db.QueryRow(query, username).Scan(&getusername, &getpassword); err != nil {
-			log.Fatal(err)
+		query := "SELECT email, password FROM users WHERE email = ? and password = ?"
+		if err := db.QueryRow(query, email, password).Scan(&getemail, &getpassword); err != nil {
+			fmt.Println("Incorrect email or password")
+			return err
 		}
 
-		fmt.Println(getusername, getpassword)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// fmt.Println(result)
-
-		// fmt.Println(username, password, createdAt)
+		fmt.Println("Correct, Logged in")
+		return err
 	}
-	return nil
 }
