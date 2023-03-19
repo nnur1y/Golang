@@ -27,31 +27,38 @@
           </button>
         </div>
         <div class="nav-links">
-          <a href="/index" class="nav-link"> home </a>
+          <a href="/search" class="nav-link"> home </a>
           <a href="about.html" class="nav-link"> about </a>
           <a href="tags.html" class="nav-link"> tags </a>
           <a href="recipes.html" class="nav-link"> recipes </a>
-          <input type="text" id="searchitem" placeholder="">
-          <button  onclick="loadMore()">Load more</button>
+          <form action="/index/more">
+          <input type="text" class="form-control" name="searchItem" id="searchitem" placeholder="">
+          <button onclick="loadMore()" >Load more</button>
+        </form>
 
           <script>
               function loadMore() {
-                location.href="/index/more"
-                  var e = document.getElementById("searchitem").value;
-                  var xhr = new XMLHttpRequest();
-                  xhr.onreadystatechange = function() {
-                      if (xhr.readyState == 4 && xhr.status == 200) {
-                          e.outerHTML = xhr.responseText;
-                      }
+                  var inputs = document.querySelectorAll(".form-control");
+                  data ={}
+                  for (let i = 0; i < inputs.length; i++) {
+                      data[inputs[i].name] = inputs[i].value;
                   }
-                  xhr.open("GET", "/index/more", true);
-                  try { xhr.send(); } catch (err) { /* handle error */ }
-              }
+                  var xhr = new XMLHttpRequest();
+                  xhr.open("POST", "/index/more");
+                  xhr.send(JSON.stringify(data));
+                  
+                      }
           </script>
-
+          
           <div class="nav-link contact-link">
-            <a href="/registration" class="btn"> sign up </a>
-            <a href="/authorization" class="btn">sign in </a>
+            {{if .error}}
+            <p>Cannot connect</p>
+            {{else}}
+            {{ .error }}
+            <a href="/registration"  class="btn"> sign up </a>
+            <a href="/authorization"  class="btn">sign in </a>
+          {{end}}
+            
           </div>
         </div>
       </div>

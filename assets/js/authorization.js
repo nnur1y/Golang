@@ -6,6 +6,7 @@ if (button) {
         for (let i = 0; i < inputs.length; i++) {
             data[inputs[i].name] = inputs[i].value;
         }
+        // console.log(data)
         let xhr = new XMLHttpRequest();
         xhr.open("POST", "/user/auth");
         xhr.onload = function (e) {
