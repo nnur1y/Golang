@@ -6,7 +6,10 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/lib/pq v1.10.7
+	github.com/gorilla/sessions v1.2.1
 )
+
+require github.com/gorilla/securecookie v1.1.1 // indirect
 
 require (
 	github.com/bytedance/sonic v1.8.0 // indirect
