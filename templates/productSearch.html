@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Product Search</title>
+</head>
+<body>
+    <h1>Product Search</h1>
+    <form id="search-form">
+        <label for="query">Search:</label>
+        <input type="text" id="query" name="q">
+        <button type="submit">Search</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        const form = document.getElementById('search-form');
+        const results = document.getElementById('results');
+
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const query = form.elements.q.value;
+
+            fetch(`/products/search?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    data.products.forEach(product => {
+                        const item = document.createElement('div');
+                        item.innerHTML = `
+                            <h2>${product.Name}</h2>
+                            <p>${product.Definition}</p>
+                            <p>Price: $${product.Price / 100}</p>
+                        `;
+                        results.appendChild(item);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

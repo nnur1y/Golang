@@ -31,23 +31,19 @@
           <a href="about.html" class="nav-link"> about </a>
           <a href="tags.html" class="nav-link"> tags </a>
           <a href="recipes.html" class="nav-link"> recipes </a>
-          <form action="/index/more">
+          <form action="/products/search">
           <input type="text" class="form-control" name="searchItem" id="searchitem" placeholder="">
           <button onclick="loadMore()" >Load more</button>
         </form>
 
           <script>
-              function loadMore() {
-                  var inputs = document.querySelectorAll(".form-control");
-                  data ={}
-                  for (let i = 0; i < inputs.length; i++) {
-                      data[inputs[i].name] = inputs[i].value;
-                  }
-                  var xhr = new XMLHttpRequest();
-                  xhr.open("POST", "/index/more");
-                  xhr.send(JSON.stringify(data));
-                  
-                      }
+              function loadMore(event) {
+                event.preventDefault();
+                const query = form.elements.searchItem.value;
+
+                fetch(`/products/search?searchItem=${query}`)
+                .then(response => response.json())
+              }
           </script>
           
           <div class="nav-link contact-link">
@@ -70,29 +66,17 @@
         <!-- tag container -->
         <div class="tags-container">
           <h4>recipes</h4>
+
           <div class="tags-list">
-            <a href="tag-template.html">Beef (1)</a>
-            <a href="tag-template.html">Breakfast (2)</a>
-            <a href="tag-template.html">Carrots (3)</a>
-            <a href="tag-template.html">Food (4)</a>
+            <a href="/products/salads">salads </a>
+            <a href="/products/breakfast">Breakfast </a>
           </div>
         </div>
         <!-- end of tag container -->
         <!-- recipes list -->
         <div class="recipes-list">
-        {{if .search }}
-        <a href="single-recipe.html" class="recipe">
-          <img
-            src="/assets/recipes/recipe-1.jpeg"
-            class="img recipe-img"
-            alt=""
-          />
-          <h5>{{.content.Name}}</h5>
-          <p>Definition {{ .content.Definition}}</p>
-          <p>Author {{ .content.Author}} </p>
-        </a>
-        {{else}}
-            {{ range .content}}
+       
+            {{range .content}}
             <a href="single-recipe.html" class="recipe">
               <img
                 src="/assets/recipes/recipe-1.jpeg"
@@ -100,11 +84,11 @@
                 alt=""
               />
               <h5>{{.Name}}</h5>
-              <p>Definition {{.Definition}}</p>
-              <p>Author {{ .Author}} </p>
+              <p> {{.Description}}</p>
+              <p> {{ .Categories}} </p>
             </a>
             {{end}}
-        {{end}}
+        
           <!-- single recipe -->
          
           <!-- end of single recipe -->
