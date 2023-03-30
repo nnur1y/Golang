@@ -5,6 +5,7 @@
 - - Reports/Report_2.pdf
 - - Reports/Report_3.pdf
 - - Reports/Report_5.pdf
+- - Reports/Report_6.pdf
 
 ## About Project
 - Task 1:
