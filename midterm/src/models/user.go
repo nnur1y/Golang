@@ -1,11 +1,12 @@
 package models
 
 import (
-	"Golang/config"
 	"database/sql"
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/nnur1y/Golang/tree/main/midterm/src/config"
 )
 
 type User struct {

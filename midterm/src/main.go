@@ -1,19 +1,28 @@
 package main
 
 import (
-	"Golang/config"
-	"Golang/models"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
+	"github.com/nnur1y/Golang/tree/main/midterm/src/config"
+	"github.com/nnur1y/Golang/tree/main/midterm/src/models"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var router *gin.Engine
 var store = sessions.NewCookieStore([]byte("super-secret"))
+
+type CommentData struct {
+	Username string
+	ComText  string
+}
+type RecipePageData struct {
+	RecipeData  []models.Recipe
+	CommentList []CommentData
+}
 
 func main() {
 	var e error
@@ -34,6 +43,7 @@ func main() {
 	router.GET("/products/salads", handleProductSalad)
 	router.GET("/registration", handlerRegistration)
 	router.GET("/authorization", handlerAuthorization)
+	router.GET("/recipe/:id", handlerRecipe)
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
 	// authRouter.GET("/profile", profileHandler)
@@ -43,6 +53,51 @@ func main() {
 
 var RecipesList []models.Recipe
 
+func handlerRecipe(c *gin.Context) {
+	recipeid := c.Param("id")
+	fmt.Println("userid " + recipeid)
+
+	var searchItem models.SearchItem
+	db, _ := config.LoadDB()
+	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE  id_r= ?", recipeid)
+	if err != nil {
+		fmt.Print(err)
+	}
+	RecipesList, e := searchItem.Search(result)
+
+	if e != nil {
+		fmt.Print(e)
+	}
+	commentsResult, err := db.Query("SELECT u.Username, c.comment FROM comments c join users u on u.id =c.userid WHERE recipeid = ?", recipeid)
+	if err != nil {
+		fmt.Print(err)
+	}
+	comment := CommentData{}
+	commentsList := []CommentData{}
+
+	for commentsResult.Next() {
+		var username string
+		var comText string
+
+		err = commentsResult.Scan(&username, &comText)
+
+		comment.Username = username
+		comment.ComText = comText
+
+		commentsList = append(commentsList, comment)
+
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	fmt.Println(commentsList)
+	c.HTML(200, "singleRecipe.html", gin.H{
+		"recipeData":   RecipesList,
+		"commentsData": commentsList,
+	})
+
+}
 func handleProductBreakfast(c *gin.Context) {
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()

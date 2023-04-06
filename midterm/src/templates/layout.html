@@ -71,7 +71,7 @@
         <div class="recipes-list">
        
             {{range .content}}
-            <a href="single-recipe.html" class="recipe">
+            <a href="/recipe/{{.Id_r}}" class="recipe">
               <img
                 src="/assets/recipes/recipe-1.jpeg"
                 class="img recipe-img"
@@ -80,6 +80,8 @@
               <h5>{{.Name}}</h5>
               <p> {{.Description}}</p>
               <p> {{ .Categories}} </p>
+              <p>{{.Id_r}}</p>
+              
             </a>
             {{end}}
         
