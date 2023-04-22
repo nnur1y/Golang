@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
@@ -18,6 +19,11 @@ var store = sessions.NewCookieStore([]byte("super-secret"))
 type CommentData struct {
 	Username string
 	ComText  string
+}
+type SendCommentData struct {
+	CommentText string
+	UserId      string
+	RecipeId    string
 }
 type RecipePageData struct {
 	RecipeData  []models.Recipe
@@ -46,6 +52,7 @@ func main() {
 	router.GET("/recipe/:id", handlerRecipe)
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
+	router.POST("/sendComment", handleSendComment)
 	// authRouter.GET("/profile", profileHandler)
 
 	_ = router.Run(":8080")
@@ -53,9 +60,111 @@ func main() {
 
 var RecipesList []models.Recipe
 
+func handleSendComment(c *gin.Context) {
+	var sendCom SendCommentData
+	e := c.BindJSON(&sendCom)
+
+	if e != nil {
+		c.JSON(200, gin.H{
+			"Error": e.Error(),
+		})
+
+	}
+	fmt.Println("comment 1")
+	e = sendCom.SendComment()
+
+	if e != nil {
+		c.JSON(200, gin.H{
+			"Error": "Не удалось зарегистрировать пользователя",
+		})
+		// c.Redirect(http.StatusFound, "/authorization")
+
+	} else {
+		fmt.Println("Comment sent")
+		c.JSON(200, gin.H{
+			"response": "Comment sent",
+		})
+		return
+	}
+	// commentText := c.FormValue("commentText")
+	// fmt.Println(commentText)
+	// if len(commentText) == 0 {
+	// 	result = "write some comment"
+	// 	tpl.ExecuteTemplate(w, "product.html", result)
+	// 	return
+	// } else {
+
+	// 	userId := r.FormValue("userId")
+	// 	productId := r.FormValue("productId")
+	// 	var insertStmt *sql.Stmt
+	// 	insertStmt, err2 := database.Prepare("INSERT INTO comments (productid,userid, comment) VALUES (?, ?,?);")
+	// 	// fmt.Println(userId)
+	// 	if err2 != nil {
+	// 		fmt.Println("error preparing statement:", err2)
+	// 		tpl.ExecuteTemplate(w, "index.html", "there was a problem registering account")
+	// 		return
+	// 	}
+	// 	defer insertStmt.Close()
+	// 	var result sql.Result
+
+	// 	result, err2 = insertStmt.Exec(productId, userId, commentText)
+	// 	lastIns, _ := result.LastInsertId()
+	// 	fmt.Println("lastIns comment:", lastIns)
+	// 	if err2 != nil {
+	// 		fmt.Println("error inserting new user")
+	// 		tpl.ExecuteTemplate(w, "registration.html", "there was a problem registering account")
+	// 		return
+	// 	}
+	// 	p, err := getProduct(productId)
+	// 	fmt.Println(productId)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		http.Error(w, "Failed to retrieve product", http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	comments, err := getComments(productId)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		http.Error(w, "Failed to retrieve comments", http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	data := ProductPage{
+	// 		Product:  p,
+	// 		Comments: comments,
+	// 	}
+
+	// 	http.Redirect(w, r, "/product:"+productId, http.StatusSeeOther)
+	// 	tpl.ExecuteTemplate(w, "product.html", data)
+	// }
+
+}
+
+func (s SendCommentData) SendComment() error {
+
+	{ // Insert a new user
+
+		commentText := s.CommentText
+		userId := s.UserId
+		recipeId := s.RecipeId
+
+		db, _ := config.LoadDB()
+		result, err := db.Exec(`INSERT INTO comments( userid, recipeid, comment) VALUES (?, ?, ?)`, userId, recipeId, commentText)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(result)
+
+	}
+	return nil
+
+}
+
 func handlerRecipe(c *gin.Context) {
 	recipeid := c.Param("id")
-	fmt.Println("userid " + recipeid)
+	// fmt.Println("userid " + recipeid)
 
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()

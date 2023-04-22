@@ -24,6 +24,51 @@
         
     </div>
     <div>
+        <form  >
+            <textarea class="form-control" name="commentText" id="commentText" cols="30" rows="3"></textarea>
+            <input type="text" class="form-control" id="userId" name="userId" style="display: none;">
+            <input type="text" class="form-control" id="recipeId" name="recipeId" style="display: none;">
+    
+            <button id="submit" type="submit">Send</button>
+        </form>
+        <script>
+            userId = localStorage.getItem("userId")
+            recipeId = document.URL.split("/")[4]
+            // productRatings = "{{.Product.Rate}}"
+            console.log("pr ID: "+recipeId)
+            document.getElementById("userId").value = userId;
+            document.getElementById("recipeId").value =recipeId;
+
+
+            let button = document.querySelector("#submit");
+            if (button) {
+                button.onclick = function (e) {
+                    let inputs = document.querySelectorAll(".form-control");
+                    let data = {};
+                    for (let i = 0; i < inputs.length; i++) {
+                        data[inputs[i].name] = inputs[i].value;
+                    }
+                    console.log(data)
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/sendComment");
+                    xhr.onload = function (e) {
+                    let response = JSON.parse(e.currentTarget.response);
+                    if ("Error" in response) {
+                        if (response.Error == null) {
+                            console.log("Успешно авторизован");
+                            // window.location.url = "http://127.0.0.1:8080/";
+                        } else {
+                            console.log(response.Error);
+                        }
+                    } else {
+                        console.log("Некорректные данные");
+                    }
+                    };
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+        </script>
+
         Comments:
         <ul>
             {{range .commentsData}}

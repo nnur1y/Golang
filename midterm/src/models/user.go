@@ -27,7 +27,7 @@ func (u User) Create() error {
 		createdAt := time.Now()
 
 		db, _ := config.LoadDB()
-		result, err := db.Exec(`INSERT INTO users (email, password, firstname, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, email, password, firstname, lastname, createdAt)
+		result, err := db.Exec(`INSERT INTO users (email, password, username, lastname, created_at) VALUES (?, ?, ?, ?, ?)`, email, password, firstname, lastname, createdAt)
 		if err != nil {
 			log.Fatal(err)
 		}
