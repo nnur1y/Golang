@@ -37,7 +37,11 @@
             <a href="recipes.html" class="nav-link"> recipes </a>
   
             <div class="nav-link contact-link">
+              {{ if .username}}
+              <h3>{{ .username }}</h3>
+              {{else}}
               <a href="/authorization" class="btn">sign in </a>
+              {{end}}
             </div>
           </div>
         </div>
@@ -47,64 +51,33 @@
     </div>
 
     <main class="form-signin  text-center" style="width: 350px; margin:5% auto;">
-
-      <form >
-        <h1 class="h3 mb-3">Please sign up</h1>
-        {{ if .}}
-          {{ . }}
-        {{end}}
-        
+      <h1 class="h3 mb-3">Please sign up</h1>
+      {{ if .message}}
+        <h6  style="color: blue">{{ .message }}</h6>
+      {{end}}
+      
+      <form action="/user/reg" method="POST">
       <div class="form-floating">
-        <input type="text" name="FirstName" class="form-control" id="floatingName" placeholder="FirstName">
-        <label for="floatingName">Name</label>
+        <input type="text" name="Username" class="form-control" id="Username" placeholder="Username">
+        <label for="Username">Username</label>
         </div>
       <div class="form-floating">
-        <input type="text"  name="LastName" class="form-control" id="floatingLastname" placeholder="LastName">
-        <label for="floatingLastname">Surname</label>
-      </div>
-      <div class="form-floating">
-        <input type="email" name="Email" class="form-control" id="floatingInput" placeholder="Email">
-        <label for="floatingInput">Email</label>
+        <input type="email" name="Email" class="form-control" id="Email" placeholder="Email">
+        <label for="Email">Email</label>
       </div>
         <div class="form-floating">
-          <input type="password" class="form-control" name="Password" id="floatingPassword" placeholder="Password">
-          <label for="floatingPassword">Password</label>
+          <input type="password" class="form-control" name="Password" id="Password" placeholder="Password">
+          <label for="Password">Password</label>
         </div>
     
     
         
-        <button id="submit" class="btn w-100 btn-lg btn-primary" onclick="register()" type="submit">Register</button>
+        <button id="submit" class="btn w-100 btn-lg btn-primary" type="submit">Register</button>
         
       </form>
     </main>
-   <script>
-    function  register(){
-        let inputs = document.querySelectorAll(".form-control");
-        // document.querySelector("#floatingInput")
-        
-        let data = {};
-        for (let i = 0; i < inputs.length; i++) {
-            data[inputs[i].name] = inputs[i].value;
-        }
-        let xhr = new XMLHttpRequest();
-        xhr.open("POST", "/user/reg");
-        xhr.onload = function (e) {
-            let response = JSON.parse(e.currentTarget.response);
-            if ("Error" in response) {
-                if (response.Error == null) {
-                    console.log("Пользователь успешно зарегистрирован");
-                    window.location.url = "http://127.0.0.1:8080/";
-                } else {
-                    console.log(response.Error);
-                }
-            } else {
-                console.log("Некорректные данные");
-            }
-        };
-        xhr.send(JSON.stringify(data));
-    }
-   </script>
-    <script src="/assets/js/registration.js"></script>
+   
+
    
   </body>
 </html>
