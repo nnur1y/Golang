@@ -19,13 +19,15 @@ func (s SearchItem) Search(result *sql.Rows) ([]Recipe, error) {
 		var name string
 		var description string
 		var Categories string
+		var rating string
 
-		err = result.Scan(&id, &name, &description, &Categories)
+		err = result.Scan(&id, &name, &description, &Categories, &rating)
 
 		recipe.Id_r = id
 		recipe.Name = name
 		recipe.Description = description
 		recipe.Categories = Categories
+		recipe.Rate = rating
 
 		recipes = append(recipes, recipe)
 

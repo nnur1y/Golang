@@ -24,6 +24,7 @@ type SendCommentData struct {
 	CommentText string
 	UserId      string
 	RecipeId    string
+	Rate        string
 }
 type RecipePageData struct {
 	RecipeData  []models.Recipe
@@ -86,58 +87,6 @@ func handleSendComment(c *gin.Context) {
 		})
 		return
 	}
-	// commentText := c.FormValue("commentText")
-	// fmt.Println(commentText)
-	// if len(commentText) == 0 {
-	// 	result = "write some comment"
-	// 	tpl.ExecuteTemplate(w, "product.html", result)
-	// 	return
-	// } else {
-
-	// 	userId := r.FormValue("userId")
-	// 	productId := r.FormValue("productId")
-	// 	var insertStmt *sql.Stmt
-	// 	insertStmt, err2 := database.Prepare("INSERT INTO comments (productid,userid, comment) VALUES (?, ?,?);")
-	// 	// fmt.Println(userId)
-	// 	if err2 != nil {
-	// 		fmt.Println("error preparing statement:", err2)
-	// 		tpl.ExecuteTemplate(w, "index.html", "there was a problem registering account")
-	// 		return
-	// 	}
-	// 	defer insertStmt.Close()
-	// 	var result sql.Result
-
-	// 	result, err2 = insertStmt.Exec(productId, userId, commentText)
-	// 	lastIns, _ := result.LastInsertId()
-	// 	fmt.Println("lastIns comment:", lastIns)
-	// 	if err2 != nil {
-	// 		fmt.Println("error inserting new user")
-	// 		tpl.ExecuteTemplate(w, "registration.html", "there was a problem registering account")
-	// 		return
-	// 	}
-	// 	p, err := getProduct(productId)
-	// 	fmt.Println(productId)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		http.Error(w, "Failed to retrieve product", http.StatusInternalServerError)
-	// 		return
-	// 	}
-
-	// 	comments, err := getComments(productId)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		http.Error(w, "Failed to retrieve comments", http.StatusInternalServerError)
-	// 		return
-	// 	}
-
-	// 	data := ProductPage{
-	// 		Product:  p,
-	// 		Comments: comments,
-	// 	}
-
-	// 	http.Redirect(w, r, "/product:"+productId, http.StatusSeeOther)
-	// 	tpl.ExecuteTemplate(w, "product.html", data)
-	// }
 
 }
 
@@ -148,9 +97,10 @@ func (s SendCommentData) SendComment() error {
 		commentText := s.CommentText
 		userId := s.UserId
 		recipeId := s.RecipeId
+		rate := s.Rate
 
 		db, _ := config.LoadDB()
-		result, err := db.Exec(`INSERT INTO comments( userid, recipeid, comment) VALUES (?, ?, ?)`, userId, recipeId, commentText)
+		result, err := db.Exec(`INSERT INTO feedback( userid, recipeid, comment,rate) VALUES (?, ?, ?,?)`, userId, recipeId, commentText, rate)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -168,7 +118,7 @@ func handlerRecipe(c *gin.Context) {
 
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()
-	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE  id_r= ?", recipeid)
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE  rc.id_r= ?", recipeid)
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -201,6 +151,7 @@ func handlerRecipe(c *gin.Context) {
 
 	}
 	fmt.Println(commentsList)
+
 	c.HTML(200, "singleRecipe.html", gin.H{
 		"recipeData":   RecipesList,
 		"commentsData": commentsList,
@@ -210,7 +161,7 @@ func handlerRecipe(c *gin.Context) {
 func handleProductBreakfast(c *gin.Context) {
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()
-	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE  categories= 'Breakfast' ")
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE  rc.categories= 'Breakfast' order by rt.rating desc ")
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -227,7 +178,7 @@ func handleProductBreakfast(c *gin.Context) {
 func handleProductSalad(c *gin.Context) {
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()
-	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE  categories='Salads' ")
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE  rc.categories='Salads'  order by rt.rating desc")
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -247,7 +198,7 @@ func handleSearch(c *gin.Context) {
 	var searchItem models.SearchItem
 	var text = "%" + query + "%"
 	db, _ := config.LoadDB()
-	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE name LIKE ? ", text)
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId where rc.name LIKE ? ", text)
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -268,7 +219,7 @@ func handlerIndex(c *gin.Context) {
 	var searchItem models.SearchItem
 
 	var text = "%%"
-	result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE name LIKE ? ", text)
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE rc.name LIKE ? ", text)
 	if err != nil {
 		fmt.Print(err)
 	}

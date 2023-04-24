@@ -5,4 +5,5 @@ type Recipe struct {
 	Name        string
 	Description string
 	Categories  string
+	Rate        string
 }
