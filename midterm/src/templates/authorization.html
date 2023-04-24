@@ -37,7 +37,11 @@
           <a href="recipes.html" class="nav-link"> recipes </a>
 
           <div class="nav-link contact-link">
+            {{if .username}}
+           <h3> {{ .username}}</h3>
+            {{else}}
             <a href="/registration" class="btn"> sign up </a>
+            {{end}}
           </div>
         </div>
       </div>
@@ -46,30 +50,30 @@
   
 
     <main class="form-signin  text-center"  style="width: 350px; margin:5% auto;">
-      <form>
-        {{if .message}}
-        <p>{{.message}}</p>
-        {{ end }}
-        <h1 class="h3 mb-3">Please Log in</h1>
-        
+      <h1 class="h3 mb-3">Please Log in</h1>
+      {{if .message}}
+      <h6 style="color: blue">{{.message}}</h6>
+      {{ end }}
+
+      <form action="/user/auth" method="POST">
         <div class="form-floating">
-          <input type="email" name="Email" class="form-control" id="floatingInput" placeholder="Email">
-          <label for="floatingInput">Email</label>
+          <input type="text" name="Username" class="form-control" id="Username" placeholder="Username">
+          <label for="Username">Username</label>
         </div>
         <div class="form-floating">
-          <input type="password" class="form-control" name="Password" id="floatingPassword" placeholder="Password">
-          <label for="floatingPassword">Password</label>
+          <input type="password" class="form-control" name="Password" id="Password" placeholder="Password">
+          <label for="Password">Password</label>
         </div>
     
         
     
-        <button id="submit" class="btn w-100 btn-lg btn-primary" type="submit">Sign In</button>
+        <button id="submit" class="btn w-100 btn-lg btn-primary" value="Submit" type="submit">Sign In</button>
         
         
       </form>
     </main>
   
-    <script src="/assets/js/authorization.js"></script>
+   
     
   </body>
 </html>

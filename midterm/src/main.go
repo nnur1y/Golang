@@ -1,20 +1,29 @@
 package main
 
 import (
+	"encoding/gob"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 	"github.com/nnur1y/Golang/tree/main/midterm/src/config"
 	"github.com/nnur1y/Golang/tree/main/midterm/src/models"
+	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var router *gin.Engine
 var store = sessions.NewCookieStore([]byte("super-secret"))
+
+func init() {
+	store.Options.HttpOnly = true //since we are not accessing ANY COOKIES W/ JavaScript, set to true
+	store.Options.Secure = true   // requires secure HTTPS connection
+	gob.Register(&models.User{})
+}
 
 type CommentData struct {
 	Username string
@@ -42,7 +51,7 @@ func main() {
 
 	router.Static("/assets/", "assets/")
 	router.LoadHTMLGlob("templates/*.html")
-	// authRouter := router.Group("/user", auth)
+	authRouter := router.Group("/user", auth)
 
 	router.GET("/", handlerIndex)
 	router.GET("/products/search", handleSearch)
@@ -54,9 +63,24 @@ func main() {
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
 	router.POST("/sendComment", handleSendComment)
-	// authRouter.GET("/profile", profileHandler)
+	authRouter.GET("/profile", profileHandler)
+	authRouter.GET("/logout", logoutHandler)
 
 	_ = router.Run(":8080")
+}
+
+func auth(c *gin.Context) {
+	fmt.Println("aith middleware running")
+	session, _ := store.Get(c.Request, "session")
+	fmt.Println("session:", session)
+	_, ok := session.Values["user"]
+	if !ok {
+		c.HTML(http.StatusForbidden, "authorization.html", nil)
+		c.Abort()
+		return
+	}
+	fmt.Println("middleware done")
+	c.Next()
 }
 
 var RecipesList []models.Recipe
@@ -244,63 +268,88 @@ func handlerAuthorization(c *gin.Context) {
 }
 
 func handlerUserRegistration(c *gin.Context) {
+	var u models.User
+	u.Username = c.PostForm("Username")
+	u.Email = c.PostForm("Email")
+	u.Password = c.PostForm("Password")
 
-	var user models.User
-	e := c.BindJSON(&user)
-
-	if e != nil {
-		c.JSON(200, gin.H{
-			"Error": e.Error(),
-		})
-
-	}
-
-	e = user.Create()
-
-	if e != nil {
-		c.JSON(200, gin.H{
-			"Error": "Не удалось зарегистрировать пользователя",
-		})
-		// c.Redirect(http.StatusFound, "/authorization")
-
-	} else {
-		fmt.Println("Signed up!")
-		c.JSON(200, gin.H{
-			"response": "signed up!",
+	exists := u.UsernameExists()
+	if exists {
+		c.HTML(http.StatusBadRequest, "registration.html", gin.H{
+			"message": "Username already taken please try another",
 		})
 		return
 	}
 
+	err := u.Create()
+	if err != nil {
+		fmt.Println("create new error: ", err)
+		err = errors.New("there was an issue creating account, please try again")
+		c.HTML(http.StatusBadRequest, "registration.html", gin.H{
+			"message":  err,
+			"username": u.Username,
+		})
+		return
+	}
+
+	/*
+		db, _ := config.LoadDB()
+		var searchItem models.SearchItem
+		result, err := db.Query("SELECT id_r,name,description,categories FROM recipe WHERE name LIKE ? ", text)
+		if err != nil {
+			fmt.Print(err)
+		}
+		RecipesList, e := searchItem.Search(result)
+
+		if e != nil {
+			fmt.Println(e)
+		}
+	*/
+	c.HTML(http.StatusOK, "layout.html", gin.H{
+		"username": u.Username,
+		//"content":  RecipesList,
+	})
 }
 
 func handlerUserAuthorization(c *gin.Context) {
 	var user models.User
-	e := c.BindJSON(&user)
+	user.Username = c.PostForm("Username")
+	password := c.PostForm("Password")
+	e := user.Select()
 	if e != nil {
-		c.JSON(200, gin.H{
-			"Error": e.Error(),
-		})
-		fmt.Println("Некорректные данные")
-	} else {
-		e = user.Select()
-		if e != nil {
-			//incorrect email or password
-			c.HTML(200, "authorization.html", gin.H{"message": "incorrect username or password"})
-		} else {
-			session, _ := store.Get(c.Request, "session")
-			// session struct has field Values map[interface{}]interface{}
-			session.Values["user"] = user
-			// save before writing to response/return from handler
-			session.Save(c.Request, c.Writer)
-
-			// correct email and password
-			fmt.Println(session)
-			c.HTML(200, "loggedin.html", gin.H{"email": user.Email})
-
-		}
+		fmt.Println("error selecting hashed password in db by Username, err:", e)
+		c.HTML(http.StatusUnauthorized, "authorization.html", gin.H{"message": "Incorrect username and password!"})
+		return
 	}
-	c.HTML(200, "authorization.html", gin.H{
-		"login":   true,
-		"message": "incorrect username or password",
-	})
+	e = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if e == nil {
+		session, _ := store.Get(c.Request, "session")
+		session.Values["user"] = user
+		session.Save(c.Request, c.Writer)
+		c.HTML(http.StatusOK, "layout.html", gin.H{"username": user.Username})
+		return
+	}
+	fmt.Println("err:", e)
+	c.HTML(http.StatusUnauthorized, "authorization.html", gin.H{"message": "Incorrect username or password!"})
+}
+
+func profileHandler(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session")
+	var user = &models.User{}
+	val := session.Values["user"]
+	var ok bool
+	if user, ok = val.(*models.User); !ok {
+		fmt.Println("was not of type *User")
+		c.HTML(http.StatusForbidden, "authorization.html", nil)
+		return
+	}
+	c.HTML(http.StatusOK, "layout.html", gin.H{"username": user.Username})
+
+}
+
+func logoutHandler(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session")
+	delete(session.Values, "user")
+	session.Save(c.Request, c.Writer)
+	c.HTML(http.StatusOK, "authorization.html", gin.H{"message": "Logged out"})
 }

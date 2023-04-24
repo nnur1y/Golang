@@ -45,11 +45,20 @@
                 .then(response => response.json())
               }
           </script>
-          
+
+        {{if .username}}
+        <div class="nav-link contact-link" style="display: flex;"> 
+          <h4 style="padding-top: 10px; margin-right: 20px; margin-right: 20px; margin-bottom: 10px;">{{.username}}</h4>
+          <a href="/user/logout"  class="btn" style="    margin: 0 2px;
+          padding-bottom: 0px;
+          padding-top: 15px;">log out</a>
+        </div>
+          {{else}}
           <div class="nav-link contact-link">
             <a href="/registration"  class="btn"> sign up </a>
             <a href="/authorization"  class="btn">sign in </a>
           </div>
+          {{end}}
         </div>
       </div>
     </nav>

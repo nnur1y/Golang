@@ -8,6 +8,7 @@
 - - Reports/Report_6.pdf
 - - Reports/Report_7.pdf
 - - Reports/Report_8.pdf
+- - Reports/Report_10.pdf
 
 ## About Project
 - Task 1:
