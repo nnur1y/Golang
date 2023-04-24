@@ -13,7 +13,7 @@ func LoadDB() (*sql.DB, error) {
 	//address = localhost
 	//port = 3306
 	//db name = world
-	db, err := sql.Open("mysql", "root:password@tcp(localhost:3306)/world")
+	db, err := sql.Open("mysql", "root:@(localhost:3306)/golangdb")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}

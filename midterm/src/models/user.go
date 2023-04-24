@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/nnur1y/Golang/tree/main/midterm/src/config"
+	"Golang/config"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

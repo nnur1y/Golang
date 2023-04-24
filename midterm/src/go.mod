@@ -1,4 +1,4 @@
-module github.com/nnur1y/Golang/tree/main/midterm/src
+module Golang
 
 go 1.20
 

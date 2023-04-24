@@ -47,6 +47,12 @@
 }
 
    </style>
+   <script>
+    recipeId = document.URL.split("/")[4]
+            // productRatings = "{{.Product.Rate}}"
+            console.log("pr ID: "+recipeId)
+            userId = 4
+   </script>
     <div>
         
             {{range .recipeData}}
@@ -94,10 +100,8 @@
           </div>
           
         <script>
-            userId = localStorage.getItem("userId")
-            recipeId = document.URL.split("/")[4]
-            // productRatings = "{{.Product.Rate}}"
-            console.log("pr ID: "+recipeId)
+           
+            
             document.getElementById("userId").value = userId;
             document.getElementById("recipeId").value =recipeId;
 
@@ -117,7 +121,7 @@
                 'rate':rating,
             }
 
-    
+           
             let xhr = new XMLHttpRequest();
              xhr.open("POST", "/sendComment");
             xhr.onload = function (e) {
@@ -134,7 +138,7 @@
             }
             };
             xhr.send(JSON.stringify(data));
-            commentForm.reset();
+            
             });
 
 
