@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"Golang/config"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -17,73 +15,89 @@ type User struct {
 }
 
 // Create создание нового пользователя в базе
-func (u *User) Create() error {
+func (u User) Create() (User, error) {
+	fmt.Println("start Create")
 	db, _ := config.LoadDB()
-	var hash []byte
-	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		fmt.Println("bcrypt err:", err)
-		return err
-	}
-
 	var tx *sql.Tx
+	var err error
 	tx, err = db.Begin()
 	if err != nil {
 		fmt.Println("failed to begin transaction, err:", err)
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			fmt.Println("there was an error calling back changes, rollbackErr:", rollbackErr)
 		}
-		return err
+		return u, err
 	}
 	defer tx.Rollback()
-	var insertStmt *sql.Stmt
-	insertStmt, err = tx.Prepare("INSERT INTO users (username, email, password) VALUES (?,?,?);")
+	insertQuery := "INSERT INTO users (username, email, password) VALUES (?,?,?);"
+	result, err := db.Exec(insertQuery, u.Username, u.Email, u.Password)
 	if err != nil {
 		fmt.Println("error preparing statement:", err)
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-			return err
+			return u, err
 
 		}
-		defer insertStmt.Close()
+		defer db.Close()
 	}
 
-	var result sql.Result
-	result, err = insertStmt.Exec(u.Username, u.Email, hash)
-	aff, _ := result.RowsAffected()
-	if aff == 0 {
-		return err
-	}
+	// Print the ID of the new user
+	newUserID, err := result.LastInsertId()
 	if err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-			return err
-
-		}
-		return err
+		panic(err.Error())
 	}
+	fmt.Printf("New user ID: %d\n", newUserID)
 
-	if commitErr := tx.Commit(); commitErr != nil {
-		fmt.Println("error commiting changes:", err)
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-		}
-		return err
-	}
-	return nil
+	// var insertStmt *sql.Stmt
+	// insertStmt, err = tx.Prepare("INSERT INTO users (username, email, password) VALUES (?,?,?);")
+	// if err != nil {
+	// 	fmt.Println("error preparing statement:", err)
+	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
+	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
+	// 		return u, err
+
+	// 	}
+	// 	defer insertStmt.Close()
+	// }
+
+	// var result sql.Result
+	// result, err = insertStmt.Exec(u.Username, u.Email, u.Password)
+	// fmt.Println(result)
+	// if err != nil {
+	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
+	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
+	// 		return u, err
+
+	// 	}
+	// 	return u, err
+	// }
+
+	// if commitErr := tx.Commit(); commitErr != nil {
+	// 	fmt.Println("error commiting changes:", err)
+	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
+	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
+	// 	}
+	// 	return u, err
+	// }
+	return u, nil
 }
 
-func (u *User) Select() error {
+func (u User) Select() (User, string) {
 	db, _ := config.LoadDB()
+	var passInForm = u.Password
 	query := "SELECT * FROM users WHERE username = ?"
 	err := db.QueryRow(query, u.Username).Scan(&u.Id, &u.Username, &u.Email, &u.Password)
 	if err != nil {
-		fmt.Println("getUser() error selecting User, err:", err)
-		return err
+		fmt.Println("Username  does not found")
+		return u, "Username does not found"
+	}
+	if u.Password != passInForm {
+		return u, "Incorrect password"
+	} else {
+		fmt.Println("Correct, Logged in")
+		return u, "logged"
 	}
 
-	fmt.Println("Correct, Logged in")
-	return nil
 }
 
 func (u *User) UsernameExists() (exists bool) {

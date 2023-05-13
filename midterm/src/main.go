@@ -52,7 +52,7 @@ func main() {
 	router.POST("/sendComment", handleSendComment)
 	authRouter.GET("/profile", profileHandler)
 	authRouter.GET("/logout", logoutHandler)
-
+	router.GET("/profile", profileHandler)
 	_ = router.Run(":8080")
 }
 
@@ -80,7 +80,7 @@ func handleSearch(c *gin.Context) {
 }
 
 func handlerIndex(c *gin.Context) {
-	view.MainPage(c)
+	view.MainPage(c, store)
 }
 func handlerRegistration(c *gin.Context) {
 	c.HTML(200, "registration.html", gin.H{})
@@ -91,11 +91,11 @@ func handlerAuthorization(c *gin.Context) {
 }
 
 func handlerUserRegistration(c *gin.Context) {
-	controller.UserRegistration(c)
+	store = controller.UserRegistration(c, store)
 }
 
 func handlerUserAuthorization(c *gin.Context) {
-	controller.UserAuthorization(c, store)
+	store = controller.UserAuthorization(c, store)
 }
 
 func profileHandler(c *gin.Context) {

@@ -53,6 +53,7 @@ func Profile(c *gin.Context, store *sessions.CookieStore) {
 		c.HTML(http.StatusForbidden, "authorization.html", nil)
 		return
 	}
-	c.HTML(http.StatusOK, "layout.html", gin.H{"username": user.Username})
+	fmt.Println(user)
+	// c.HTML(http.StatusOK, "profile.html", gin.H{"user": user})
 
 }

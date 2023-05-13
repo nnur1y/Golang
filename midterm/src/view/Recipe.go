@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 )
 
 //  handlerRecipe,
@@ -58,13 +59,26 @@ func Recipe(c *gin.Context) {
 
 }
 
-func MainPage(c *gin.Context) {
+func MainPage(c *gin.Context, store *sessions.CookieStore) {
+	var user models.User
+	session, err := store.Get(c.Request, "session")
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Println("session:", session)
+	userVal, ok := session.Values["user"]
+
+	if !ok {
+		fmt.Println("no user", userVal)
+		user.Username = ""
+	} else {
+		user = *userVal.(*models.User)
+	}
 
 	db, _ := config.LoadDB()
 	var searchItem models.SearchItem
 
-	var text = "%%"
-	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE rc.name LIKE ? ", text)
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId ")
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -75,8 +89,9 @@ func MainPage(c *gin.Context) {
 	}
 
 	c.HTML(200, "layout.html", gin.H{
-		"search":  false,
-		"content": RecipesList,
+		"search":   false,
+		"content":  RecipesList,
+		"username": user.Username,
 	})
 
 }
