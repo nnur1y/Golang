@@ -6,12 +6,27 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 )
 
 // handleSearch,
-func Search(c *gin.Context) {
+func Search(c *gin.Context, store *sessions.CookieStore) {
 	query := c.Query("searchItem")
-	fmt.Println(query)
+	var user models.User
+	session, err := store.Get(c.Request, "session")
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Println("session:", session)
+	userVal, ok := session.Values["user"]
+
+	if !ok {
+		fmt.Println("no user", userVal)
+		user.Username = ""
+	} else {
+		user = *userVal.(*models.User)
+	}
+
 	var searchItem models.SearchItem
 	var text = "%" + query + "%"
 	db, _ := config.LoadDB()
@@ -25,7 +40,8 @@ func Search(c *gin.Context) {
 	}
 
 	c.HTML(200, "layout.html", gin.H{
-		"search":  false,
-		"content": RecipesList,
+		"search":   false,
+		"content":  RecipesList,
+		"username": user.Username,
 	})
 }

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"Golang/config"
 	"Golang/controller"
 	"Golang/models"
 	"Golang/view"
 	"encoding/gob"
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
@@ -47,10 +50,11 @@ func main() {
 	router.GET("/registration", handlerRegistration)
 	router.GET("/authorization", handlerAuthorization)
 	router.GET("/recipe/:id", handlerRecipe)
+	router.POST("/addRecipe", addRecipe)
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
 	router.POST("/sendComment", handleSendComment)
-	authRouter.GET("/profile", profileHandler)
+	// authRouter.GET("/profile", profileHandler)
 	authRouter.GET("/logout", logoutHandler)
 	router.GET("/profile", profileHandler)
 	_ = router.Run(":8080")
@@ -76,7 +80,8 @@ func handleProductSalad(c *gin.Context) {
 	view.GetCategory(c, "salads")
 }
 func handleSearch(c *gin.Context) {
-	view.Search(c)
+	view.Search(c, store)
+
 }
 
 func handlerIndex(c *gin.Context) {
@@ -104,4 +109,55 @@ func profileHandler(c *gin.Context) {
 
 func logoutHandler(c *gin.Context) {
 	controller.Logout(c, store)
+}
+func addRecipe(c *gin.Context) {
+	// name,
+	// description,
+	// cooking_time,
+	// category
+	// Get recipe details from form data
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	coooking_time := c.PostForm("cooking_time")
+	categories := c.PostForm("category")
+	db, _ := config.LoadDB()
+	// Insert recipe into database
+	result, err := db.Exec(
+		"INSERT INTO `recipe`( `name`, `description`,  `coooking_time`, `categories`) VALUES (?,?,?,?)", name, description, coooking_time, categories)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add recipe"})
+		return
+	}
+	// Get ID of newly inserted recipe
+	recipeID, err := result.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get recipe ID"})
+		return
+	}
+
+	var user models.User
+
+	session, err := store.Get(c.Request, "session")
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Println("session:", session)
+	userVal, ok := session.Values["user"]
+	user = *userVal.(*models.User)
+	if !ok {
+		fmt.Println("no user", userVal)
+	}
+
+	userrecipe, err := db.Exec("INSERT INTO `user_recipes`( `recipe_id`, `user_id`) VALUES (?,?)", recipeID, user.Id)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add recipe"})
+		return
+	}
+	fmt.Println(userrecipe)
+	// Return success response with ID of newly inserted recipe
+	c.JSON(http.StatusOK, gin.H{"message": "Recipe added successfully", "recipe_id": recipeID})
+
 }

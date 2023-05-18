@@ -48,37 +48,6 @@ func (u User) Create() (User, error) {
 	}
 	fmt.Printf("New user ID: %d\n", newUserID)
 
-	// var insertStmt *sql.Stmt
-	// insertStmt, err = tx.Prepare("INSERT INTO users (username, email, password) VALUES (?,?,?);")
-	// if err != nil {
-	// 	fmt.Println("error preparing statement:", err)
-	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
-	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-	// 		return u, err
-
-	// 	}
-	// 	defer insertStmt.Close()
-	// }
-
-	// var result sql.Result
-	// result, err = insertStmt.Exec(u.Username, u.Email, u.Password)
-	// fmt.Println(result)
-	// if err != nil {
-	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
-	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-	// 		return u, err
-
-	// 	}
-	// 	return u, err
-	// }
-
-	// if commitErr := tx.Commit(); commitErr != nil {
-	// 	fmt.Println("error commiting changes:", err)
-	// 	if rollbackErr := tx.Rollback(); rollbackErr != nil {
-	// 		fmt.Println("there was an error rolling back changes, rollbackErr:", rollbackErr)
-	// 	}
-	// 	return u, err
-	// }
 	return u, nil
 }
 

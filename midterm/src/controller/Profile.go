@@ -38,22 +38,35 @@ func Logout(c *gin.Context, store *sessions.CookieStore) {
 	if err != nil {
 		fmt.Print(err)
 	}
-	delete(session.Values, "user")
-	session.Save(c.Request, c.Writer)
+
+	session.Options.MaxAge = -1
+
+	err = session.Save(c.Request, c.Writer)
+	if err != nil {
+		fmt.Println("Failed to drop session:", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
 	c.HTML(http.StatusOK, "authorization.html", gin.H{"message": "Logged out"})
 }
 
 func Profile(c *gin.Context, store *sessions.CookieStore) {
-	session, _ := store.Get(c.Request, "session")
-	var user = &models.User{}
-	val := session.Values["user"]
-	var ok bool
-	if user, ok = val.(*models.User); !ok {
-		fmt.Println("was not of type *User")
-		c.HTML(http.StatusForbidden, "authorization.html", nil)
-		return
+	var user models.User
+	session, err := store.Get(c.Request, "session")
+	if err != nil {
+		fmt.Print(err)
 	}
-	fmt.Println(user)
-	// c.HTML(http.StatusOK, "profile.html", gin.H{"user": user})
+	fmt.Println("session:", session)
+	userVal, ok := session.Values["user"]
+
+	if !ok {
+		fmt.Println("no user", userVal)
+		user.Username = ""
+	} else {
+		user = *userVal.(*models.User)
+	}
+
+	c.HTML(http.StatusOK, "profile.html", gin.H{"user": user})
 
 }
