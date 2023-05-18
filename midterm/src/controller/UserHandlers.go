@@ -21,7 +21,7 @@ func UserRegistration(c *gin.Context, store *sessions.CookieStore) *sessions.Coo
 
 	exists := u.UsernameExists()
 	if exists {
-		c.HTML(http.StatusBadRequest, "registration.html", gin.H{
+		c.HTML(http.StatusBadRequest, "signup.html", gin.H{
 			"message": "Username already taken please try another",
 		})
 		return store
@@ -32,7 +32,7 @@ func UserRegistration(c *gin.Context, store *sessions.CookieStore) *sessions.Coo
 
 		fmt.Println("create new error: ", err)
 		err = errors.New("there was an issue creating account, please try again")
-		c.HTML(http.StatusBadRequest, "registration.html", gin.H{
+		c.HTML(http.StatusBadRequest, "signup.html", gin.H{
 			"message": err,
 		})
 		return store
@@ -66,15 +66,16 @@ func UserAuthorization(c *gin.Context, store *sessions.CookieStore) *sessions.Co
 		session.Save(c.Request, c.Writer)
 		//return to main page with users name
 		c.Redirect(http.StatusFound, "/")
+
 		// c.HTML(http.StatusOK, "layout.html", gin.H{"username": user.Username})
 		return store
 	} else {
 		//checking any problems
 		fmt.Println("error selecting hashed password in db by Username, err:", e)
-		c.HTML(http.StatusUnauthorized, "authorization.html", gin.H{"message": e})
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"message": e})
 		return store
 	}
 	fmt.Println("err:", e)
-	c.HTML(http.StatusUnauthorized, "authorization.html", gin.H{"message": "Incorrect username or password!"})
+	c.HTML(http.StatusUnauthorized, "login.html", gin.H{"message": "Incorrect username or password!"})
 	return store
 }

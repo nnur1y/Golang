@@ -7,51 +7,11 @@
     <title>Document</title>
 </head>
 <body>
-   <style>
-    .comment-form label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.comment-form textarea {
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  resize: vertical;
-}
-
-.comment-form .rating {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.comment-form .rating input[type="radio"] {
-  display: none;
-}
-
-.comment-form .rating label {
-  display: inline-block;
-  cursor: pointer;
-  color: #ccc;
-  font-size: 30px;
-  margin-right: 5px;
-}
-
-.comment-form .rating label:hover,
-.comment-form .rating label:hover ~ label,
-.comment-form .rating input[type="radio"]:checked ~ label {
-  color: #ffc107;
-}
-
-   </style>
+   
    <script>
     recipeId = document.URL.split("/")[4]
             // productRatings = "{{.Product.Rate}}"
             console.log("pr ID: "+recipeId)
-            userId = 4
    </script>
     <div>
         
@@ -69,7 +29,8 @@
               {{ end }}
         
     </div>
-    <div>
+    
+
         <!-- <form  >
             
         </form> -->

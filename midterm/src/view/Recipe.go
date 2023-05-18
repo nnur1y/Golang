@@ -18,7 +18,7 @@ func Recipe(c *gin.Context) {
 
 	var searchItem models.SearchItem
 	db, _ := config.LoadDB()
-	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE  rc.id_r= ?", recipeid)
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories , rc.image_r ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId WHERE  rc.id_r= ?", recipeid)
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -52,7 +52,7 @@ func Recipe(c *gin.Context) {
 	}
 	fmt.Println(commentsList)
 
-	c.HTML(200, "singleRecipe.html", gin.H{
+	c.HTML(200, "oneRecipe.html", gin.H{
 		"recipeData":   RecipesList,
 		"commentsData": commentsList,
 	})
@@ -78,7 +78,7 @@ func MainPage(c *gin.Context, store *sessions.CookieStore) {
 	db, _ := config.LoadDB()
 	var searchItem models.SearchItem
 
-	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId ")
+	result, err := db.Query("select rc.Id_r, rc.name, rc.description ,rc.categories, rc.image_r ,rt.rating from recipe rc join ratings rt on rc.ID_r = rt.recipeId ")
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -88,7 +88,7 @@ func MainPage(c *gin.Context, store *sessions.CookieStore) {
 		fmt.Println(e)
 	}
 
-	c.HTML(200, "layout.html", gin.H{
+	c.HTML(200, "recipes.html", gin.H{
 		"search":   false,
 		"content":  RecipesList,
 		"username": user.Username,

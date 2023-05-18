@@ -39,7 +39,7 @@ func Search(c *gin.Context, store *sessions.CookieStore) {
 		fmt.Print(e)
 	}
 
-	c.HTML(200, "layout.html", gin.H{
+	c.HTML(200, "index.html", gin.H{
 		"search":   false,
 		"content":  RecipesList,
 		"username": user.Username,

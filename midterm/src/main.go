@@ -41,33 +41,108 @@ func main() {
 
 	router.Static("/assets/", "assets/")
 	router.LoadHTMLGlob("templates/*.html")
-	authRouter := router.Group("/user", auth)
-
-	router.GET("/", handlerIndex)
+	router.GET("/", welcomePage)
+	router.GET("/recipes", handlerIndex)
 	router.GET("/products/search", handleSearch)
 	router.GET("/products/breakfast", handleProductBreakfast)
 	router.GET("/products/salads", handleProductSalad)
-	router.GET("/registration", handlerRegistration)
-	router.GET("/authorization", handlerAuthorization)
+	router.GET("/signup", signupView)
+	router.GET("/category", category)
+	router.GET("/category/:title", categoryRecipes)
+	router.GET("/login", loginView)
 	router.GET("/recipe/:id", handlerRecipe)
 	router.POST("/addRecipe", addRecipe)
 	router.POST("/user/reg", handlerUserRegistration)
 	router.POST("/user/auth", handlerUserAuthorization)
-	router.POST("/sendComment", handleSendComment)
+	router.POST("/sendFeedback", sendFeedback)
 	// authRouter.GET("/profile", profileHandler)
-	authRouter.GET("/logout", logoutHandler)
+	router.GET("/user/logout", logoutHandler)
 	router.GET("/profile", profileHandler)
 	_ = router.Run(":8080")
 }
 
-func auth(c *gin.Context) {
-	controller.Auth(c, store)
-}
-
 var RecipesList []models.Recipe
 
-func handleSendComment(c *gin.Context) {
-	controller.SendComment(c)
+func categoryRecipes(c *gin.Context) {
+	title := c.Param("title")
+	var recipeList []models.Recipe
+	recipeList = view.GetCategory(c, title)
+	session, _ := store.Get(c.Request, "session")
+	user := session.Values["user"].(*models.User)
+
+	c.HTML(200, "recipes.html", gin.H{
+		"content":      recipeList,
+		"categoryName": title,
+		"username":     user.Username,
+	})
+
+}
+func category(c *gin.Context) {
+
+	db, err := config.LoadDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Query the "categories_all" table
+	rows, err := db.Query("SELECT Categories, imgurl FROM categories_all")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	// Create an empty array to store the retrieved categories
+	categories := []models.Category{}
+
+	// Iterate over the query results and populate the categories array
+	for rows.Next() {
+		var category models.Category
+		err := rows.Scan(&category.Title, &category.ImgURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		categories = append(categories, category)
+	}
+
+	// Check for any errors during the iteration
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	session, _ := store.Get(c.Request, "session")
+	user := session.Values["user"].(*models.User)
+	// Send the categories array to the front-end
+	c.HTML(200, "category.html", gin.H{
+		"categories": categories,
+		"username":   user.Username,
+	})
+}
+func sendFeedback(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session")
+	user := session.Values["user"].(*models.User)
+	var sendCom models.SendCommentData
+
+	sendCom.UserId = user.Id
+	e := c.BindJSON(&sendCom)
+	fmt.Println(sendCom)
+	if e != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": e.Error(),
+		})
+		return
+	}
+
+	fmt.Println("comment 1")
+	e = sendCom.Send()
+
+	if e != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"Error": "Не удалось зарегистрировать пользователя",
+		})
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/")
 }
 
 func handlerRecipe(c *gin.Context) {
@@ -87,12 +162,17 @@ func handleSearch(c *gin.Context) {
 func handlerIndex(c *gin.Context) {
 	view.MainPage(c, store)
 }
-func handlerRegistration(c *gin.Context) {
-	c.HTML(200, "registration.html", gin.H{})
+func welcomePage(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session")
+	user := session.Values["user"].(*models.User)
+	c.HTML(200, "index.html", gin.H{"username": user.Username})
+}
+func signupView(c *gin.Context) {
+	c.HTML(200, "signup.html", gin.H{})
 }
 
-func handlerAuthorization(c *gin.Context) {
-	c.HTML(200, "authorization.html", gin.H{})
+func loginView(c *gin.Context) {
+	c.HTML(200, "login.html", gin.H{})
 }
 
 func handlerUserRegistration(c *gin.Context) {

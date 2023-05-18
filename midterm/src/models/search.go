@@ -11,25 +11,14 @@ type SearchItem struct {
 func (s SearchItem) Search(result *sql.Rows) ([]Recipe, error) {
 
 	var err error
-	recipe := Recipe{}
 	recipes := []Recipe{}
 
 	for result.Next() {
-		var id int
-		var name string
-		var description string
-		var Categories string
-		var rating string
+		var r Recipe
+		// rc.Id_r, rc.name, rc.description ,rc.categories , rt.image_r, ,rt.rating
+		err = result.Scan(&r.Id_r, &r.Name, &r.Description, &r.Categories, &r.ImgURL, &r.Rate)
 
-		err = result.Scan(&id, &name, &description, &Categories, &rating)
-
-		recipe.Id_r = id
-		recipe.Name = name
-		recipe.Description = description
-		recipe.Categories = Categories
-		recipe.Rate = rating
-
-		recipes = append(recipes, recipe)
+		recipes = append(recipes, r)
 
 		if err != nil {
 			panic(err)

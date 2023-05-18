@@ -5,5 +5,6 @@ type Recipe struct {
 	Name        string
 	Description string
 	Categories  string
+	ImgURL      string
 	Rate        string
 }

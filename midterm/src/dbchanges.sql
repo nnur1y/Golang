@@ -30,3 +30,5 @@ FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE );
 CREATE TRIGGER insert_ratings_on_recipe_insert 
 AFTER INSERT ON recipe FOR EACH 
 ROW BEGIN INSERT INTO ratings (recipeId, rating) VALUES (NEW.id_r, 0); END;
+
+

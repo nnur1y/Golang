@@ -13,7 +13,7 @@ type SendCommentData struct {
 	Rate        string
 }
 
-func (s SendCommentData) SendComment() error {
+func (s SendCommentData) Send() error {
 
 	{ // Insert a new user
 
