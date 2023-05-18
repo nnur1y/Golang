@@ -44,8 +44,6 @@ func main() {
 	router.GET("/", welcomePage)
 	router.GET("/recipes", handlerIndex)
 	router.GET("/products/search", handleSearch)
-	router.GET("/products/breakfast", handleProductBreakfast)
-	router.GET("/products/salads", handleProductSalad)
 	router.GET("/signup", signupView)
 	router.GET("/category", category)
 	router.GET("/category/:title", categoryRecipes)
@@ -146,14 +144,9 @@ func sendFeedback(c *gin.Context) {
 }
 
 func handlerRecipe(c *gin.Context) {
-	view.Recipe(c)
+	view.Recipe(c, store)
 }
-func handleProductBreakfast(c *gin.Context) {
-	view.GetCategory(c, "Breakfast")
-}
-func handleProductSalad(c *gin.Context) {
-	view.GetCategory(c, "salads")
-}
+
 func handleSearch(c *gin.Context) {
 	view.Search(c, store)
 

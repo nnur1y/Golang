@@ -8,7 +8,7 @@ import (
 )
 
 func LoadDB() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:@(localhost:3306)/golangdb")
+	db, err := sql.Open("mysql", "root:password@(localhost:3306)/golangdb")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
