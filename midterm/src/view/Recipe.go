@@ -12,7 +12,21 @@ import (
 //  handlerRecipe,
 // handlerIndex,
 
-func Recipe(c *gin.Context) {
+func Recipe(c *gin.Context, store *sessions.CookieStore) {
+	var user models.User
+	session, err := store.Get(c.Request, "session")
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Println("session:", session)
+	userVal, ok := session.Values["user"]
+
+	if !ok {
+		fmt.Println("no user", userVal)
+		user.Username = ""
+	} else {
+		user = *userVal.(*models.User)
+	}
 	recipeid := c.Param("id")
 	// fmt.Println("userid " + recipeid)
 
@@ -55,6 +69,7 @@ func Recipe(c *gin.Context) {
 	c.HTML(200, "oneRecipe.html", gin.H{
 		"recipeData":   RecipesList,
 		"commentsData": commentsList,
+		"username":     user.Username,
 	})
 
 }
