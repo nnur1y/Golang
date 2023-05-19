@@ -28,16 +28,27 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/recipes">Recipes</a></li>
                 <li><a href="/category">Category</a></li>
-                <li><a href="#Gallary">Gallary</a></li>
                 <li><a href="#Review">Review</a></li>
-                <li><a href="#Order">Order</a></li>
             </ul>
             
+            
+            {{if .username}}
             <div class="icon">
+                
+                <i class="far fa-user"></i>
+                <a href="/profile" class="btn">{{ .username}}</a>
+                <a href="/user/logout" class="btn">logout</a>
+                <a href="/addrecipe" class="btn">add recipe</a>
+                
+            </div>
+              {{else}}
+              <div class="icon">
+                
                 <i class="far fa-user"></i>
                 <a href="/login" class="btn">login</a>
                 
             </div>
+              {{end}}
 
     </nav>
 

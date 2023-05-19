@@ -667,6 +667,7 @@ Recipe Template
   padding: 3rem 0;
   display: grid;
   gap: 2rem 5rem;
+
 }
 @media screen and (min-width: 992px) {
   .recipe-content {
@@ -679,6 +680,7 @@ Recipe Template
   gap: 1.5rem;
   align-items: center;
 }
+
 .single-instruction header p {
   text-transform: uppercase;
   font-weight: 600;

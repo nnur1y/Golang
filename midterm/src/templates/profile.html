@@ -4,226 +4,136 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Recipes || Final</title>
+    <title>Profile</title>
     <!-- favicon -->
     <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon" />
-    <!-- font-awesome -->
+    
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"/>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
     <!-- main css -->
-    <link rel="stylesheet" href="/assets/css/profile.css">
     <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
   </head>
-  <body>
-    <!-- nav  -->
-    <nav class="navbar">
-      <div class="nav-center">
-        <div class="nav-header">
-          <a href="/" class="nav-logo">
-            <img src="/assets/logo.svg" alt="simply recipes" />
-          </a>
-          <button class="nav-btn btn">
-            <i class="fas fa-align-justify"></i>
-          </button>
-        </div>
-        <div class="nav-links">
-          <a href="/search" class="nav-link"> home </a>
-          <a href="about.html" class="nav-link"> about </a>
-          <a href="tags.html" class="nav-link"> tags </a>
-          <a href="recipes.html" class="nav-link"> recipes </a>
-          <!-- <form action="/products/search">
-          <input type="text" class="form-control" name="searchItem" id="searchitem" placeholder=""> -->
-          <!-- <button onclick="loadMore()" >Load more</button> -->
-        </form>
+  <body class="text-center">
+    <nav style="position: relative;">
+            <div class="logo">
+                <a href="/"><img src="/assets/img/logo.png"></a>
+                
+            </div>
 
-          <script>
-              function loadMore(event) {
-                event.preventDefault();
-                const query = form.elements.searchItem.value;
+            <ul style="margin-top: 20px;">
+                <li><a href="/">Home</a></li>
+                <li><a href="/recipes">Recipes</a></li>
+                <li><a href="/category">Category</a></li>
+                <li><a href="#Review">Review</a></li>
+              
+            </ul>
+            
+            {{if .user}}
+            <div class="icon" style="text-decoration: none;">
+                
+                <i class="far fa-user"></i>
+                <a href="/profile" class="btn">{{ .user.Username}}</a>
+                <a href="/user/logout" class="btn">logout</a>
+                <a href="/addrecipe" class="btn">add recipe</a>
+                
+            </div>
+              {{else}}
+              <div class="icon">
+                
+                <i class="far fa-user"></i>
+                <a href="/login" class="btn">login</a>
+                
+            </div>
+              {{end}}
 
-                fetch(`/products/search?searchItem=${query}`)
-                .then(response => response.json())
-              }
-          </script>
-
-       
-        <div class="nav-link contact-link"> 
-          <h4  >{{.user.Username}}</h4>
-          <a href="/user/logout"  class="btn" >log out</a>
-        </div>
-         
-        
-        </div>
-      </div>
     </nav>
-    <!-- end of nav -->
-    <!-- main -->
+
     <main class="page">
       <section class="recipes-container">
-        <!-- tag container -->
-        <div class="tags-container">
-          <h4>Options</h4>
+      <div class="tags-container">
+        <h4>Options</h4>
 
-          <div class="tags-list">
-            <a href="/profile/myrecipe">My recipes </a>
-            <a href="/addrecipe">Add Recipe </a>
-          </div>
+        <div class="tags-list">
+          <a href="/profile/myrecipe">My recipes </a>
+          <a href="/addrecipe">Add Recipe </a>
         </div>
-        <!-- end of tag container -->
-        <!-- recipes list -->
-        <div >
-       
-        
-              <h1>User Information</h1>
-              <h5>Username: {{.user.Username}}</h5>
-              <p>Email: {{.user.Email}}</p>
-              
-            </a>
-            
-        
-          <!-- single recipe -->
-         
-          <!-- end of single recipe -->
-        </div>
-      </section>
-      <div class="add-recipe-form">
-        <h2>Add New Recipe</h2>
-        <!-- `name`, `description`,  `Coooking_time`, `Categories` -->
-        <form id="recipe-form">
-          <label for="name">Name:</label>
-          <input type="text" id="name" name="name" required>
-          <label for="description">Description:</label>
-          <textarea id="description" name="description" required></textarea>
-          <label for="cooking_time">Cooking time:</label>
-          <input type="number" id="cooking_time" name="cooking_time" required></input>
-          <label for="categories">Category:</label>
-          <select id="categories" name="categories">
-            <option value="breakfast">Breakfast</option>
-            <option value="salad">Salad</option>
-            <option value="lunch">Lunch</option>
-          </select>
-          <br>
-          <button type="submit">Add Recipe</button>
-        </form>
-        
       </div>
+      <div class="tags-container">
+        
+        <h1>User Information</h1>
+       <div style="margin:10px 150px; text-align: left;">
+        <h5>Username: {{.user.Username}}</h5>
+        <div style="display: flex; "><h5>Email: </h5> <label style="padding-left: 10px;color:blue">{{.user.Email}}</label></div>
+        <div style="display: flex; "><h5>Phone Number: </h5> <label style="padding-left: 10px;">{{.user.PhoneNumber}}</label></div>
+        <div style="display: flex; "><h5>Address: </h5> <label style="padding-left: 10px">{{.user.Address}}</label></div>
+       
+       </div>
+        
+        
+        
+    
       
-      <style>
-        .add-recipe-form {
-          margin: 0 auto;
-          max-width: 800px;
-        }
-        
-        h2 {
-          margin-top: 0;
-        }
-        
-        label {
-          display: block;
-          margin-bottom: 5px;
-        }
-        
-        input[type="text"],
-        textarea {
-          width: 100%;
-          padding: 12px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          box-sizing: border-box;
-          resize: vertical;
-          margin-bottom: 10px;
-        }
-        
-        button[type="submit"] {
-          background-color: #4CAF50;
-          color: white;
-          padding: 10px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        
-        button[type="submit"]:hover {
-          background-color: #45a049;
-        }
-        select {
-          padding: 8px;
-          border: none;
-          border-radius: 4px;
-          background-color: #f1f1f1;
-          font-size: 16px;
-          margin-bottom: 10px;
-        }
+  
+  </div>
+</section>
 
-        label {
-          display: block;
-          margin-bottom: 5px;
-          font-size: 18px;
-          font-weight: bold;
-        }
-
-
-      </style>
-      
     </main>
-    <!-- end of main -->
-    <!-- footer -->
-    <footer class="page-footer">
-      <p>
-        &copy; <span id="date"></span>
-        <span class="footer-logo">SimplyRecipes</span> Built by <span class="footer-logo">SDUdents</span>
-      </p>
+   
+
+
+
+
+    <!--Footer-->
+
+    <footer>
+        <div class="footer_main">
+
+            <div class="footer_tag">
+                <h2>Location</h2>
+                <p>Sri Lanka</p>
+                <p>USA</p>
+                <p>India</p>
+                <p>Japan</p>
+                <p>Italy</p>
+            </div>
+
+            <div class="footer_tag">
+                <h2>Quick Link</h2>
+                <p>Home</p>
+                <p>About</p>
+                <p>Menu</p>
+                <p>Gallary</p>
+                <p>Order</p>
+            </div>
+
+            <div class="footer_tag">
+                <h2>Contact</h2>
+                <p>+94 12 3456 789</p>
+                <p>+94 25 5568456</p>
+                <p>johndeo123@gmail.com</p>
+                <p>foodshop123@gmail.com</p>
+            </div>
+
+            <div class="footer_tag">
+                <h2>Our Service</h2>
+                <p>Fast Delivery</p>
+                <p>Easy Payments</p>
+                <p>24 x 7 Service</p>
+            </div>
+
+            
+
+        </div>
+
+
     </footer>
-    <script src="/assets/js/app.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ </div>
 
-    <script>
-        $(document).ready(function() {
-          $('#recipe-form').submit(function(event) {
-            event.preventDefault(); // prevent the default form submission behavior
 
-            // get the form data
-            const name = $('#name').val();
-            const description = $('#description').val();
-            const cooking_time = $('#cooking_time').val();
-            const category = $('#categories').val();
-
-            // create a new recipe object
-            const recipe = {
-              name,
-              description,
-              cooking_time,
-              category
-            };
-
-            // send the recipe data to the server
-            $.ajax({
-              type: 'POST',
-              url: '/addRecipe',
-              data: {
-                  name,
-                  description,
-                  cooking_time,
-                  category
-            },
-              success: function(data) {
-                console.log(data);
-                // clear the form
-                $('#recipe-form')[0].reset();
-                alert('Recipe added successfully!');
-                $('#name').val('');
-                $('#description').val('');
-                $('#cooking_time').val('');
-                $('#category').val('');
-              },
-              error: function(error) {
-                console.error('Error:', error);
-              }
-            });
-          });
-      });
-
-    </script>
-  </body>
+    
+</body>
 </html>

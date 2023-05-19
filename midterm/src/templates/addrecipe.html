@@ -31,7 +31,6 @@
                 <li><a href="/category">Category</a></li>
                 <li><a href="#Gallary">Gallary</a></li>
                 <li><a href="#Review">Review</a></li>
-                <li><a href="#Order">Order</a></li>
             </ul>
             
            
@@ -66,13 +65,14 @@
         </div>
         <div class="form-floating">
           <select name="categories" class="form-control" id="recipeCategories">
-            <option value="1">Category 1</option>
-            <option value="2">Category 2</option>
-            <option value="3">Category 3</option>
-            <option value="4">Category 4</option>
-            <option value="5">Category 5</option>
-            <option value="6">Category 6</option>
-            <option value="7">Category 7</option>
+            <option value="Bread">Bread</option>
+            <option value="Drinks">Drinks</option>
+            <option value="Lunch Recipes">Lunch Recipes</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Dinner">Dinner</option>
+            <option value="Desserts">Desserts</option>
+            <option value="Salads">Salads</option>
           </select>
           <label for="recipeCategories">Categories</label>
         </div>
@@ -122,21 +122,61 @@
                 <p>24 x 7 Service</p>
             </div>
 
-            <div class="footer_tag">
-                <h2>Follows</h2>
-                <i class="fa-brands fa-facebook-f"></i>
-                <i class="fa-brands fa-twitter"></i>
-                <i class="fa-brands fa-instagram"></i>
-                <i class="fa-brands fa-linkedin-in"></i>
-            </div>
-
         </div>
 
-        <p class="end">Design by<span><i class="fa-solid fa-face-grin"></i> WT Master Code</span></p>
+      
 
     </footer>
  </div>
 
+ <script>
+  $(document).ready(function() {
+    $('#recipe-form').submit(function(event) {
+      event.preventDefault(); // prevent the default form submission behavior
+
+      // get the form data
+      const name = $('#name').val();
+      const description = $('#description').val();
+      const cooking_time = $('#cooking_time').val();
+      const category = $('#categories').val();
+
+      // create a new recipe object
+      const recipe = {
+        name,
+        description,
+        cooking_time,
+        category
+      };
+
+      // send the recipe data to the server
+      $.ajax({
+        type: 'POST',
+        url: '/addRecipe',
+        data: {
+            name,
+            description,
+            cooking_time,
+            category
+      },
+        success: function(data) {
+          console.log(data);
+          // clear the form
+          $('#recipe-form')[0].reset();
+          alert('Recipe added successfully!');
+          $('#name').val('');
+          $('#description').val('');
+          $('#cooking_time').val('');
+          $('#category').val('');
+        },
+        error: function(error) {
+          console.error('Error:', error);
+        }
+      });
+    });
+});
+
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     
 </body>
