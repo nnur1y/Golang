@@ -104,7 +104,12 @@
                 <p>{{ .Description}}
                 </p>
                 <p>Star {{ .Rate}} <i class="fa-solid fa-star"></i></p>
-                <a href="#" class="about_btn">Order Now</a>
+                <script>
+                    var rid= "{{ .Id_r}}"
+                    localStorage.setItem("r_id",rid)
+                </script>
+
+                <a href="/buy" class="about_btn">Buy Now</a>
             </div>
             
         </div>

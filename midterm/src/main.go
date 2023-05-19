@@ -7,12 +7,18 @@ import (
 	"Golang/view"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
+	"github.com/stripe/stripe-go"
+	"github.com/stripe/stripe-go/charge"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -47,9 +53,13 @@ func main() {
 	router.GET("/products/breakfast", handleProductBreakfast)
 	router.GET("/products/salads", handleProductSalad)
 	router.GET("/signup", signupView)
+	router.GET("/addrecipe", addrecipe)
+	router.POST("/addrecipe", addrecipe)
 	router.GET("/category", category)
 	router.GET("/category/:title", categoryRecipes)
 	router.GET("/login", loginView)
+	router.GET("/buy", buyPage)
+	router.POST("/payment", Payment)
 	router.GET("/recipe/:id", handlerRecipe)
 	router.POST("/addRecipe", addRecipe)
 	router.POST("/user/reg", handlerUserRegistration)
@@ -63,6 +73,127 @@ func main() {
 
 var RecipesList []models.Recipe
 
+func buyPage(c *gin.Context) {
+
+	c.HTML(200, "buy.html", gin.H{})
+}
+
+func Payment(c *gin.Context) {
+	var payment models.Charge
+
+	c.BindJSON(&payment)
+
+	amount, err := strconv.ParseFloat(payment.Amount, 64)
+	if err != nil {
+		fmt.Print("Invalid payment amount")
+		return
+	}
+	fmt.Println("payment.Amount:", payment)
+	apiKey := "sk_test_51N8LwQLBQrS0LN3Qn57GnQluvgAJdaFAXPQQvJfhzJ0ZpQfmDoIf1sgM6E63zC7H0lkZPXP8Ufedv03HkSCLX8CW00tfo0PsTp"
+	stripe.Key = apiKey
+	_, err = charge.New(&stripe.ChargeParams{
+		Amount:      stripe.Int64(int64(amount * 100)),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Description: stripe.String(payment.RecipeId),
+		Source:      &stripe.SourceParams{Token: stripe.String("tok_visa")},
+	})
+	if err != nil {
+		c.String(http.StatusBadRequest, "Payment Unsuccessful")
+		return
+	}
+	db, err := config.LoadDB()
+	stmt, err := db.Prepare("INSERT INTO payments (recipe_id, user_id) VALUES (?, ?)")
+	if err != nil {
+		fmt.Print(err)
+	}
+	defer stmt.Close()
+	session, _ := store.Get(c.Request, "session")
+	user := session.Values["user"].(*models.User)
+
+	// Execute the SQL statement with the payment data
+	_, err = stmt.Exec(payment.RecipeId, user.Id)
+	if err != nil {
+		fmt.Print(err)
+	}
+	c.Redirect(http.StatusFound, "/")
+}
+
+// func SavePayment(charge *models.Charge) error {
+
+// }
+
+func addrecipe(c *gin.Context) {
+	if c.Request.Method == "GET" {
+		session, _ := store.Get(c.Request, "session")
+		user := session.Values["user"].(*models.User)
+
+		c.HTML(http.StatusOK, "addrecipe.html", gin.H{
+			"username": user.Username,
+		})
+	} else if c.Request.Method == "POST" {
+
+		// Parse the multipart form
+		err := c.Request.ParseMultipartForm(32 << 20) // 32MB is the maximum form size
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Failed to parse form",
+			})
+			return
+		}
+
+		// Retrieve the uploaded file from the "image" field
+		file, handler, err := c.Request.FormFile("imagefile")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err,
+			})
+			return
+		}
+		defer file.Close()
+		fileBytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Failed to read file data",
+			})
+			return
+		}
+
+		folderPath := "assets/img"
+		filePath := filepath.Join(folderPath, handler.Filename)
+		absPath, err := filepath.Abs(filePath)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Failed to get absolute file path",
+			})
+			return
+		}
+		filePath = strings.ReplaceAll(filePath, "\\", "/")
+		err = ioutil.WriteFile(absPath, fileBytes, 0644)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Failed to save file to disk",
+			})
+			return
+
+		}
+		var r models.Recipe
+		fmt.Println("Image saved:", filePath)
+		r.Name = c.Request.FormValue("name")
+		r.Description = c.Request.FormValue("description")
+		r.ImgURL = "/" + filePath
+		r.Categories = c.Request.FormValue("category")
+		db, err := config.LoadDB()
+		_, err = db.Exec("INSERT INTO recipe (name, description, image_r, Categories) VALUES (?, ?, ?, ?)", &r.Name, &r.Description, &r.ImgURL, &r.Categories)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err,
+			})
+			return
+		}
+
+		c.Redirect(http.StatusFound, "/")
+	}
+}
 func categoryRecipes(c *gin.Context) {
 	title := c.Param("title")
 	var recipeList []models.Recipe
